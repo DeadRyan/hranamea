@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PWA Installation - Hrana Mea</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        .card {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #db23e8;
+        }
+        button {
+            background-color: #db23e8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 5px 0;
+        }
+        .status {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .success {
+            background-color: #4CAF50;
+        }
+        .warning {
+            background-color: #FFC107;
+        }
+        .error {
+            background-color: #F44336;
+        }
+        pre {
+            background-color: #333;
+            padding: 10px;
+            overflow: auto;
+        }
+        footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test PWA Installation - Hrana Mea</h1>
+    
+    <div class="card">
+        <h2>1. PWA Status Check</h2>
+        <ul id="pwa-status">
+            <li><span class="status" id="manifest-status"></span> Manifest File</li>
+            <li><span class="status" id="sw-status"></span> Service Worker</li>
+            <li><span class="status" id="install-status"></span> Installable</li>
+            <li><span class="status" id="display-status"></span> Display Mode</li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>2. Installation Test</h2>
+        <button id="btn-force-install">Test Installation</button>
+        <button id="btn-visit-install-page">Visit Install Page</button>
+        <p id="install-message">Click a button to test installation functionality</p>
+    </div>
+    
+    <div class="card">
+        <h2>3. Script Loading Status</h2>
+        <ul id="script-status">
+            <li><span class="status" id="pwa-setup-status"></span> pwa-setup.js</li>
+            <li><span class="status" id="pwa-register-status"></span> pwa-register.js</li>
+            <li><span class="status" id="floating-button-status"></span> floating-install-button.js</li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>4. Debug Output</h2>
+        <pre id="debug-output">Loading...</pre>
+    </div>
+    
+    <footer>
+        <a href="index.html">Back to Main Page</a> | 
+        <a href="instaleaza-app.html">Installation Page</a>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const debug = document.getElementById('debug-output');
+            const debugLog = [];
+            
+            function addLog(message) {
+                debugLog.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+                debug.textContent = debugLog.join('\n');
+            }
+            
+            // Override console.log
+            const originalLog = console.log;
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                addLog(args.join(' '));
+            };
+            
+            // Check manifest
+            const manifestStatus = document.getElementById('manifest-status');
+            const manifestLink = document.querySelector('link[rel="manifest"]');
+            if (manifestLink) {
+                manifestStatus.className = 'status success';
+                console.log('✅ Manifest link found:', manifestLink.href);
+                
+                // Try to fetch the manifest
+                fetch(manifestLink.href)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('✅ Manifest loaded successfully');
+                    })
+                    .catch(error => {
+                        manifestStatus.className = 'status error';
+                        console.log('❌ Error loading manifest:', error);
+                    });
+            } else {
+                manifestStatus.className = 'status error';
+                console.log('❌ Manifest link not found');
+            }
+            
+            // Check service worker
+            const swStatus = document.getElementById('sw-status');
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration()
+                    .then(registration => {
+                        if (registration) {
+                            swStatus.className = 'status success';
+                            console.log('✅ Service worker registered:', registration.scope);
+                        } else {
+                            swStatus.className = 'status warning';
+                            console.log('⚠️ Service worker not registered yet');
+                        }
+                    })
+                    .catch(error => {
+                        swStatus.className = 'status error';
+                        console.log('❌ Service worker error:', error);
+                    });
+            } else {
+                swStatus.className = 'status error';
+                console.log('❌ Service workers not supported');
+            }
+            
+            // Check installability
+            const installStatus = document.getElementById('install-status');
+            if ('BeforeInstallPromptEvent' in window) {
+                installStatus.className = 'status success';
+                console.log('✅ Installation API supported');
+            } else {
+                // Check if running on iOS
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    installStatus.className = 'status warning';
+                    console.log('⚠️ iOS requires manual installation');
+                } else {
+                    installStatus.className = 'status warning';
+                    console.log('⚠️ Installation API not detected (may still work)');
+                }
+            }
+            
+            // Check display mode
+            const displayStatus = document.getElementById('display-status');
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone === true) {
+                displayStatus.className = 'status success';
+                console.log('✅ Running in standalone/installed mode');
+            } else {
+                displayStatus.className = 'status warning';
+                console.log('⚠️ Running in browser mode (not installed)');
+            }
+            
+            // Check script loading
+            const pwaSetupStatus = document.getElementById('pwa-setup-status');
+            const pwaRegisterStatus = document.getElementById('pwa-register-status');
+            const floatingButtonStatus = document.getElementById('floating-button-status');
+            
+            if (document.querySelector('script[src="/pwa-setup.js"]')) {
+                pwaSetupStatus.className = 'status success';
+                console.log('✅ pwa-setup.js loaded');
+            } else {
+                pwaSetupStatus.className = 'status error';
+                console.log('❌ pwa-setup.js not loaded');
+            }
+            
+            if (document.querySelector('script[src="/pwa-register.js"]')) {
+                pwaRegisterStatus.className = 'status success';
+                console.log('✅ pwa-register.js loaded');
+            } else {
+                pwaRegisterStatus.className = 'status warning';
+                console.log('⚠️ pwa-register.js not loaded (may be loaded dynamically)');
+            }
+            
+            if (document.querySelector('script[src="/floating-install-button.js"]')) {
+                floatingButtonStatus.className = 'status success';
+                console.log('✅ floating-install-button.js loaded');
+            } else {
+                floatingButtonStatus.className = 'status warning';
+                console.log('⚠️ floating-install-button.js not loaded (may be loaded dynamically)');
+            }
+            
+            // Test installation button
+            const btnForceInstall = document.getElementById('btn-force-install');
+            const btnVisitInstallPage = document.getElementById('btn-visit-install-page');
+            const installMessage = document.getElementById('install-message');
+            
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                console.log('📱 Install prompt event captured and saved');
+            });
+            
+            btnForceInstall.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    console.log('📱 Showing install prompt');
+                    installMessage.textContent = 'Installation prompt shown';
+                    deferredPrompt.prompt();
+                    
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`📱 User ${outcome} the installation`);
+                    installMessage.textContent = `User ${outcome} the installation`;
+                    
+                    deferredPrompt = null;
+                } else {
+                    console.log('📱 No install prompt available');
+                    installMessage.textContent = 'No install prompt available (already installed or not supported)';
+                    
+                    // Redirect to install page as fallback
+                    setTimeout(() => {
+                        window.location.href = 'instaleaza-app.html';
+                    }, 1500);
+                }
+            });
+            
+            btnVisitInstallPage.addEventListener('click', () => {
+                window.location.href = 'instaleaza-app.html';
+            });
+            
+            // Check for floating install button
+            setTimeout(() => {
+                const floatingButton = document.getElementById('pwa-install-button');
+                if (floatingButton) {
+                    console.log('✅ Floating install button rendered');
+                } else {
+                    console.log('⚠️ Floating install button not found (may be hidden if installed)');
+                }
+            }, 2000);
+            
+            console.log('PWA test page initialized');
+        });
+    </script>
+</body>
+</html>

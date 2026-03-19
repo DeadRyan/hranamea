@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Verificare Email - Hrana Mea</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <style>
+        /* Logo Styling */
+        .logo-container {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 200px;
+            height: auto;
+            max-width: 100%;
+        }
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Responsive Dark Theme Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            background-color: #1e1e1e; /* Dark background */
+            color: #e0e0e0; /* Light text color */
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            overscroll-behavior: contain; /* Prevent pull-to-refresh on mobile */
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        /* Message container */
+        .message-container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #db23e8;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .error {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff5555;
+        }
+        
+        .success {
+            background-color: rgba(0, 255, 0, 0.1);
+            border: 1px solid #44ff44;
+        }
+        
+        button, .btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #db23e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        button:hover, .btn:hover {
+            background-color: #c31fcb;
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: auto;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            border-top: 1px solid #333;
+        }
+        
+        footer a {
+            color: #db23e8;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="HM Logo">
+    </div>
+    
+    <!-- App name under logo -->
+    <h1 style="margin-top: 0; margin-bottom: 15px; font-size: 2rem; color: #ffffff;">Hrana Mea</h1>
+
+    <h1>Verificare Email</h1>
+    
+    <div class="message-container">
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Verificăm contul tău. Te rugăm să aștepți...</p>
+        </div>
+        
+        <div id="message" class="message" style="display: none;"></div>
+        
+        <div id="actions" style="display: none;">
+            <a href="login.html" class="btn">Autentificare</a>
+            <a href="index.html" class="btn">Pagina principală</a>
+        </div>
+    </div>
+    
+    <footer>
+        <a href="Terms.pdf" target="_blank">Termeni și condiții</a> | Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingElement = document.getElementById('loading');
+            const messageElement = document.getElementById('message');
+            const actionsElement = document.getElementById('actions');
+            
+            // Get token from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                loadingElement.style.display = 'none';
+                messageElement.textContent = 'Link invalid. Te rugăm să verifici email-ul pentru linkul corect de verificare.';
+                messageElement.className = 'message error';
+                messageElement.style.display = 'block';
+                actionsElement.style.display = 'block';
+                return;
+            }
+            
+            // Verify token with server
+            fetch(`/api/auth/verify?token=${token}`)
+                .then(response => response.json())
+                .then(data => {
+                    loadingElement.style.display = 'none';
+                    
+                    if (data.success) {
+                        messageElement.textContent = data.message;
+                        messageElement.className = 'message success';
+                        
+                        // Redirect to homepage after successful verification
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 3000);
+                    } else {
+                        messageElement.textContent = data.message || 'Eroare la verificarea contului. Te rugăm să încerci din nou.';
+                        messageElement.className = 'message error';
+                    }
+                    
+                    messageElement.style.display = 'block';
+                    actionsElement.style.display = 'block';
+                })
+                .catch(error => {
+                    loadingElement.style.display = 'none';
+                    messageElement.textContent = 'Eroare la comunicarea cu serverul. Te rugăm să încerci mai târziu.';
+                    messageElement.className = 'message error';
+                    messageElement.style.display = 'block';
+                    actionsElement.style.display = 'block';
+                    console.error('Error verifying email:', error);
+                });
+        });
+    </script>
+</body>
+</html>

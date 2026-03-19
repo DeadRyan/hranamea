@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Termeni și condiții - Stil de viață și alimentație sănătoasă</title>
+    <meta name="description" content="Termenii și condițiile pentru utilizarea platformei Hrana Mea - Stil de viață și alimentație sănătoasă.">
+    <meta name="keywords" content="termeni, condiții, stil de viață sănătos, alimentație sănătoasă">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <style>
+        /* Logo Styling */
+        .logo-container {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 150px;
+            height: auto;
+            max-width: 100%;
+        }
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Responsive Dark Theme Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            background-color: #1e1e1e; /* Dark background */
+            color: #e0e0e0; /* Light text color */
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            overscroll-behavior: contain; /* Prevent pull-to-refresh on mobile */
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        /* Content container styling */
+        .content-container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            overflow: auto;
+        }
+        
+        /* PDF embed container */
+        .pdf-container {
+            width: 100%;
+            height: 500px;
+            max-height: 60vh;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .pdf-container object,
+        .pdf-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #2a2a2a;
+        }
+        
+        .fallback-message {
+            text-align: center;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        /* Back button styling */
+        .back-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #db23e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            margin: 15px 0;
+            width: 120px;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+        
+        .back-btn:hover, .back-btn:active {
+            background-color: #c31fcb;
+        }
+        
+        /* Terms text formatting */
+        .terms-text {
+            line-height: 1.6;
+            text-align: justify;
+            font-size: 16px;
+        }
+        
+        .terms-text h2 {
+            color: #db23e8;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .terms-text p {
+            margin-bottom: 15px;
+        }
+        
+        .terms-text ol, .terms-text ul {
+            padding-left: 20px;
+        }
+        
+        .terms-text li {
+            margin-bottom: 10px;
+        }
+        
+        /* Footer styling */
+        footer {
+            margin-top: auto;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            border-top: 1px solid #333;
+        }
+        
+        /* Download button */
+        .download-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #444;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background-color: #555;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px 10px;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .content-container {
+                padding: 15px;
+            }
+            
+            .pdf-container {
+                height: 400px;
+            }
+            
+            .logo-container {
+                margin-bottom: 10px;
+                width: 100px;
+            }
+            
+            .terms-text {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            
+            .terms-text h2 {
+                font-size: 1.2rem;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+            
+            .back-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="HM Logo">
+    </div>
+    
+    <!-- App name under logo -->
+    <h1 style="margin-top: 0; margin-bottom: 12px; font-size: 1.8rem; color: #ffffff;">Hrana Mea</h1>
+
+    <h1>Termeni și condiții</h1>
+    
+    <div class="content-container">
+        <div class="pdf-container" id="pdf-viewer">
+            <!-- Try to embed PDF directly first -->
+            <object data="Terms.pdf" type="application/pdf">
+                <iframe src="https://docs.google.com/viewer?url=https://hranamea.ro/Terms.pdf&amp;embedded=true" frameborder="0">
+                    <div class="fallback-message">
+                        <p>Vizualizatorul PDF nu este disponibil. Puteți descărca documentul direct folosind linkul de mai jos.</p>
+                        <a href="Terms.pdf" download class="download-btn">Descarcă Terms.pdf</a>
+                    </div>
+                </iframe>
+            </object>
+        </div>
+        
+        <!-- Fallback text version of terms -->
+        <div class="terms-text" id="terms-text-fallback" style="display: none;">
+            <h2>Termeni și condiții pentru utilizarea aplicației Hrana Mea</h2>
+            
+            <p>Ultima actualizare: 25 aprilie 2025</p>
+            
+            <p>Vă rugăm să citiți cu atenție acești termeni și condiții înainte de a utiliza aplicația Hrana Mea. Accesând sau utilizând aplicația, sunteți de acord să respectați acești termeni. Dacă nu sunteți de acord cu vreuna dintre prevederile de mai jos, vă rugăm să nu utilizați aplicația noastră.</p>
+            
+            <h2>1. Acceptarea termenilor</h2>
+            <p>Prin utilizarea aplicației Hrana Mea, confirmați că ați citit, înțeles și sunteți de acord să respectați acești termeni și condiții, precum și politica noastră de confidențialitate.</p>
+            
+            <h2>2. Descrierea serviciului</h2>
+            <p>Hrana Mea este o aplicație destinată persoanelor care doresc să adopte un stil de viață sănătos, care oferă recomandări de rețete, sfaturi nutriționale și posibilitatea de a interacționa cu un asistent virtual pentru întrebări legate de alimentație și sănătate.</p>
+            
+            <h2>3. Înregistrare și cont utilizator</h2>
+            <p>Pentru a utiliza anumite funcționalități ale aplicației, este necesară crearea unui cont. Sunteți responsabil pentru păstrarea confidențialității datelor de autentificare și pentru toate activitățile desfășurate prin intermediul contului dumneavoastră.</p>
+            
+            <h2>4. Utilizare permisă</h2>
+            <p>Vă acordăm permisiunea de a utiliza aplicația Hrana Mea pentru uz personal și necomercial. Nu aveți voie să:</p>
+            <ul>
+                <li>Utilizați aplicația în scopuri ilegale sau neautorizate</li>
+                <li>Încălcați drepturile de proprietate intelectuală</li>
+                <li>Distribuiți, modificați sau creați lucrări derivate bazate pe conținutul aplicației</li>
+                <li>Interferați cu funcționarea normală a aplicației</li>
+            </ul>
+            
+            <h2>5. Conținut medical și nutrițional</h2>
+            <p>Informațiile furnizate prin aplicația Hrana Mea sunt exclusiv cu scop informativ și nu reprezintă sfaturi medicale profesionale. Consultați întotdeauna medicul dumneavoastră înainte de a face schimbări în dieta sau regimul dumneavoastră alimentar.</p>
+            
+            <h2>6. Limitarea răspunderii</h2>
+            <p>Aplicația Hrana Mea este oferită "așa cum este", fără garanții de niciun fel. Nu ne asumăm nicio răspundere pentru prejudiciile directe, indirecte, incidentale sau consecvente care rezultă din utilizarea sau imposibilitatea de a utiliza aplicația.</p>
+            
+            <h2>7. Modificări ale termenilor</h2>
+            <p>Ne rezervăm dreptul de a modifica acești termeni și condiții în orice moment. Modificările vor intra în vigoare imediat după publicarea lor în aplicație. Continuarea utilizării aplicației după publicarea modificărilor constituie acceptarea acestora.</p>
+            
+            <h2>8. Contact</h2>
+            <p>Pentru orice întrebări sau nelămuriri legate de acești termeni și condiții, vă rugăm să ne contactați la adresa: contact@hranamea.ro</p>
+        </div>
+    </div>
+    
+    <a href="javascript:history.back()" class="back-btn">Înapoi</a>
+    
+    <footer>
+        Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on mobile - if so, show text version directly
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const pdfViewer = document.getElementById('pdf-viewer');
+            const textFallback = document.getElementById('terms-text-fallback');
+            
+            // Function to show text fallback
+            function showTextFallback() {
+                pdfViewer.style.display = 'none';
+                textFallback.style.display = 'block';
+            }
+            
+            // On mobile, show the text version immediately for better readability
+            if (isMobile) {
+                showTextFallback();
+            } else {
+                // On desktop, try to load PDF first
+                setTimeout(function() {
+                    // Try to detect if PDF loaded successfully
+                    const pdfObject = pdfViewer.querySelector('object');
+                    
+                    if (pdfObject) {
+                        // Check if PDF object is actually showing content
+                        pdfObject.onerror = showTextFallback;
+                        
+                        // Also check after a delay in case the error doesn't trigger
+                        setTimeout(function() {
+                            // If PDF object has no content height, show fallback
+                            if (pdfObject.contentDocument &&
+                                (pdfObject.contentDocument.body.scrollHeight < 50 ||
+                                 pdfObject.contentDocument.body.innerHTML.includes('error'))) {
+                                showTextFallback();
+                            }
+                        }, 2000);
+                    } else {
+                        showTextFallback();
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

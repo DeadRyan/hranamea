@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Asistent Inteligență Artificială - Hrana Mea</title>
+    <meta name="description" content="Asistentul virtual pentru stil de viață sănătos și alimentație echilibrată. Sfaturi personalizate, rețete și planuri alimentare.">
+    <meta name="keywords" content="asistent virtual, stil de viață sănătos, alimentație sănătoasă, rețete sănătoase, sfaturi nutriție">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <style>
+        /* Logo Styling */
+        .logo-container {
+            margin-bottom: 5px;
+            margin-top: 10px;
+            text-align: center;
+            width: 100px; /* 50% of original 200px */
+            height: auto;
+            max-width: 100%;
+        }
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Responsive Dark Theme Styling */
+        :root {
+            --vh: 1vh;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 5px;
+            background-color: #1e1e1e; /* Dark background */
+            color: #e0e0e0; /* Light text color */
+            margin: 0;
+            height: 100vh; /* Fixed height */
+            height: calc(var(--vh, 1vh) * 100);
+            position: relative;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            -webkit-touch-callout: none; /* Disable callout on long press */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
+            touch-action: none; /* Prevent scrolling */
+            overflow: hidden; /* Disable scrolling */
+        }
+        
+        h1 {
+            color: #ffffff; /* White heading */
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Responsive Button Container */
+        .button-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 600px;
+            padding: 0 10px;
+        }
+        
+        .action-btn,
+        button { /* Style for main buttons */
+            padding: 8px 5px;
+            font-size: 13px;
+            cursor: pointer;
+            background-color: #db23e8; /* Keep same color theme */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 70px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation; /* Improve touch behavior */
+            margin: 0; /* Remove margin */
+            line-height: 1.2; /* Tighter line spacing */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn,
+        button {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            text-align: center;
+            padding-left: 10px;
+            padding-right: 10px;
+            box-sizing: border-box;
+        }
+        
+        .action-btn:active,
+        .action-btn:focus,
+        button:active,
+        button:focus {
+            transform: scale(0.95);
+            background-color: #c31fcb;
+            outline: none; /* Remove outline for better mobile appearance */
+        }
+        
+        .action-btn:hover,
+        button:hover {
+            background-color: #c31fcb;
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(30, 30);
+                opacity: 0;
+            }
+        }
+        
+        button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        /* Chat container */
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #2a2a2a;
+            border-radius: 5px;
+            border: 1px solid #444;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh; /* Maximize height */
+            height: calc(var(--vh, 1vh) * 85); /* Use CSS variable for better mobile height */
+            box-sizing: border-box;
+            transition: height 0.3s ease;
+            margin-bottom: 5px; /* Reduced space at bottom */
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+            scroll-behavior: smooth; /* Enable smooth scrolling */
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-break: break-word;
+            position: relative;
+        }
+        
+        /* Message actions styling */
+        .message-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-actions button {
+            background-color: #3c3c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 28px;
+        }
+        
+        .message-actions button:hover {
+            background-color: #444;
+        }
+        
+        .message-actions .action-like.liked {
+            background-color: #2a6b34;
+        }
+        
+        .message-content {
+            margin-bottom: 5px;
+        }
+        
+        .user-message {
+            background-color: #db23e8;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            background-color: #3c3c3c;
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #3c3c3c;
+            border-top: 1px solid #444;
+            position: relative;
+            z-index: 10; /* Keep input above content */
+        }
+        
+        .chat-input {
+            flex-grow: 1;
+            border: none;
+            background-color: #2a2a2a;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            outline: none;
+            margin-right: 10px;
+            height: 40px;
+            box-sizing: border-box;
+        }
+        
+        .attachment-btn {
+            background-color: transparent;
+            border: none;
+            color: white;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        .send-btn {
+            background-color: #db23e8;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .send-btn:hover, .send-btn:active {
+            background-color: #c31fcb;
+            outline: none;
+        }
+        
+        /* Ensure tappable area for buttons */
+        .action-btn, button, .button, .send-btn, .attachment-btn {
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        /* File input hidden */
+        #file-input {
+            display: none;
+        }
+        
+        /* Home button */
+        .home-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #db23e8;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            font-size: 12px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+            box-sizing: border-box;
+        }
+        
+        .home-btn:hover, .home-btn:active {
+            background-color: #c31fcb;
+            transform: scale(0.95);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px 5px;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+                margin-bottom: 0.5rem;
+                margin-top: 5px; /* Reduced space since it's now below logo */
+            }
+            
+            .button-container {
+                flex-direction: row;
+                gap: 8px;
+                margin: 8px 0;
+                padding: 0 5px; /* Reduce padding */
+            }
+            
+            .action-btn, button {
+                padding: 6px 4px;
+                font-size: 12px;
+                margin: 0;
+                text-align: center;
+                border-radius: 5px;
+                flex: 1;
+                min-width: 0; /* Allow buttons to shrink */
+            }
+            
+            .chat-container {
+                height: 86vh;
+                height: calc(var(--vh, 1vh) * 86);
+            }
+
+            .chat-container.expanded {
+                height: 92vh;
+                height: calc(var(--vh, 1vh) * 92);
+            }
+            
+            /* Improve scrolling on small screens */
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: calc(var(--vh, 1vh) * 100);
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .logo-container {
+                margin-bottom: 5px;
+                margin-top: 5px;
+                width: 80px; /* Even smaller on mobile */
+            }
+            
+            .home-btn {
+                top: 10px;
+                left: 10px;
+                min-width: 80px;
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+            
+            #user-section {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="HM Logo">
+    </div>
+    
+    <!-- User info/login section in top right corner -->
+    <div id="user-section" style="position: absolute; top: 15px; right: 15px; max-width: 100px; text-align: right; z-index: 100;">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+
+    <h1>Asistent Inteligență Artificială</h1>
+    
+    <!-- Home button with improved mobile compatibility -->
+    <a href="index.html" class="home-btn" role="button" aria-label="Go back to home page">
+        Înapoi
+    </a>
+
+    <div class="button-container">
+        <a href="javascript:void(0);" class="action-btn" id="btn-photo" style="flex: 1;">📷<br>Foto</a>
+        <a href="javascript:void(0);" class="action-btn" id="btn-data" style="flex: 1;">📊<br>Info</a>
+        <a href="javascript:void(0);" class="action-btn" id="btn-goal" style="flex: 1;">🎯<br>Scop</a>
+    </div>
+
+    <div class="chat-container" style="margin-top: 5px;">
+        <div class="chat-messages" id="chat-messages">
+            <!-- Welcome message will be added by JavaScript -->
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Scrie un mesaj...">
+            <label for="file-input" class="attachment-btn">
+                📎
+            </label>
+            <input type="file" id="file-input" accept="image/jpeg">
+            <button class="send-btn" id="send-btn" type="button" aria-label="Send message">
+                &gt;
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript for assistant page -->
+    <script src="asistent.js"></script>
+    
+    <!-- Additional styles for mobile optimization -->
+    <style>
+        /* Force hardware acceleration for smoother scrolling */
+        body, .chat-container, .chat-messages {
+            -webkit-transform: translateZ(0);
+            -moz-transform: translateZ(0);
+            -ms-transform: translateZ(0);
+            -o-transform: translateZ(0);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+        
+        /* Additional scrolling fixes for iOS */
+        .mobile-scrollable {
+            -webkit-overflow-scrolling: touch;
+            overflow-y: scroll;
+        }
+        
+        /* Prevent all scrolling */
+        html, body {
+            overscroll-behavior: none;
+            height: 100%;
+            position: fixed;
+            width: 100%;
+        }
+        
+        /* Make sure all tappable elements are easily tappable */
+        a, button, .action-btn, input, select, .send-btn {
+            min-height: 44px;
+        }
+    </style>
+    
+    <!-- Fix for iOS Safari issues -->
+    <script>
+        // Fix for 100vh in mobile browsers
+        window.addEventListener('load', function() {
+            // First, get viewport height and multiply by 1% to get a value for vh unit
+            let vh = window.innerHeight * 0.01;
+            // Then set the value in the --vh custom property to the root of the document
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            
+            // Listen to the resize event and update the --vh property
+            window.addEventListener('resize', function() {
+                let vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            });
+            
+            // Listen for orientation changes
+            window.addEventListener('orientationchange', function() {
+                // Add a small delay to make sure the browser has updated the viewport
+                setTimeout(function() {
+                    let vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                }, 100);
+            });
+            
+            // Expand chat container when interacting with it
+            const chatContainer = document.querySelector('.chat-container');
+            const chatInput = document.getElementById('chat-input');
+            const actionButtons = document.querySelectorAll('.action-btn');
+            
+            // Function to fix scroll issues on mobile
+            function fixMobileScrolling() {
+                // Force redraw of scrollable areas
+                document.body.style.display = 'none';
+                document.body.offsetHeight; // This triggers a reflow
+                document.body.style.display = '';
+                
+                // Add scrolling class to body
+                document.body.classList.add('mobile-scrollable');
+            }
+            
+            // Call on load
+            fixMobileScrolling();
+            
+            // Function to expand chat area
+            function expandChatArea() {
+                if (window.innerWidth <= 600) {
+                    chatContainer.classList.add('expanded');
+                    // Delay to ensure animation completes before scrolling
+                    setTimeout(() => {
+                        chatContainer.scrollIntoView({behavior: 'smooth', block: 'end'});
+                    }, 300);
+                }
+            }
+            
+            // Add listeners to expand chat area on interaction
+            chatInput.addEventListener('focus', expandChatArea);
+            
+            actionButtons.forEach(btn => {
+                btn.addEventListener('click', expandChatArea);
+                btn.addEventListener('touchend', expandChatArea);
+            });
+        });
+    </script>
+    
+    <!-- Added mobile app install prompt -->
+    <div id="install-app" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #333; padding: 10px; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 100;">
+        <p style="margin: 0 0 8px 0; font-size: 14px;">Adaugă aplicația pe ecranul principal</p>
+        <button id="btn-install" style="background: #db23e8; border: none; color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px;">Instalează</button>
+        <button id="btn-close-install" style="background: #444; border: none; color: white; padding: 6px 12px; border-radius: 4px; margin-left: 10px; font-size: 13px;">Nu acum</button>
+    </div>
+    
+    <!-- Footer at bottom of page -->
+    <footer style="width: 100%; padding: 5px 0; text-align: center; font-size: 10px; color: #888; border-top: 1px solid #333; margin-top: 5px; position: relative; z-index: 100;">
+        <a href="terms-viewer.html" class="terms-link" style="color: #db23e8; text-decoration: none;">Termeni și condiții</a> | Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+    
+    <!-- Authentication script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userSection = document.getElementById('user-section');
+            const photoButton = document.getElementById('btn-photo');
+            
+            // Function to update UI based on authentication status
+            function updateAuthUI(isLoggedIn, user) {
+                if (isLoggedIn && user) {
+                    // Use the actual username from the user object
+                    const displayName = user.username || user.email.split('@')[0] || 'Utilizator';
+                    
+                    userSection.innerHTML = `
+                        <button id="logout-btn" style="background-color: #db23e8; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; min-width: 80px; margin: 0; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center;">Deconectare</button>
+                    `;
+                    
+                    // Add logout functionality
+                    document.getElementById('logout-btn').addEventListener('click', function() {
+                        fetch('/api/auth/logout')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.reload();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error during logout:', error);
+                            });
+                    });
+                    
+                    // Enable photo button if user has full access
+                    if (user.hasFullAccess) {
+                        photoButton.style.opacity = '1';
+                        photoButton.style.pointerEvents = 'auto';
+                    } else {
+                        photoButton.style.opacity = '0.5';
+                        photoButton.style.pointerEvents = 'none';
+                        photoButton.title = 'Necesită abonament activ';
+                        
+                        // Add warning message for users without full access
+                        photoButton.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            alert('Această funcție necesită abonament activ. Vă mulțumim pentru înțelegere!');
+                            return false;
+                        });
+                    }
+                } else {
+                    userSection.innerHTML = `
+                        <a href="login.html" style="background-color: #db23e8; color: white; text-decoration: none; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; min-width: 80px; text-align: center; font-size: 12px;">Autentificare</a>
+                    `;
+                    
+                    // Disable photo button for non-logged in users
+                    photoButton.style.opacity = '0.5';
+                    photoButton.style.pointerEvents = 'none';
+                    photoButton.title = 'Necesită autentificare';
+                    
+                    // Add warning message
+                    photoButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        alert('Vă rugăm să vă autentificați pentru a accesa această funcție.');
+                        return false;
+                    });
+                }
+            }
+            
+            // Check authentication status
+            fetch('/api/auth/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateAuthUI(data.isLoggedIn, data.user);
+                })
+                .catch(error => {
+                    console.error('Error checking auth status:', error);
+                    updateAuthUI(false);
+                });
+        });
+    </script>
+    
+    <!-- Scriptul de redirecționare către monitorizarea glicemică -->
+    <script src="redirect-glycemic.js"></script>
+    
+    <!-- PWA Installation Script -->
+    <script>
+        // PWA installation
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 76+ from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install button
+            const installApp = document.getElementById('install-app');
+            if (installApp) installApp.style.display = 'block';
+        });
+        
+        // Handle install button click
+        const btnInstall = document.getElementById('btn-install');
+        if (btnInstall) {
+            btnInstall.addEventListener('click', () => {
+                const installApp = document.getElementById('install-app');
+                if (!deferredPrompt) return;
+                
+                // Show the install prompt
+                deferredPrompt.prompt();
+                
+                // Wait for the user to respond to the prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        if (installApp) installApp.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        }
+        
+        // Handle close install button click
+        const btnCloseInstall = document.getElementById('btn-close-install');
+        if (btnCloseInstall) {
+            btnCloseInstall.addEventListener('click', () => {
+                const installApp = document.getElementById('install-app');
+                if (installApp) installApp.style.display = 'none';
+            });
+        }
+        
+        // Check if app is installed (standalone mode)
+        if (window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true) {
+            // App is installed, hide install prompt
+            const installApp = document.getElementById('install-app');
+            if (installApp) installApp.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

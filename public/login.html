@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Autentificare - Hrana Mea</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <style>
+        /* Logo Styling */
+        .logo-container {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 200px;
+            height: auto;
+            max-width: 100%;
+        }
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Responsive Dark Theme Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            background-color: #1e1e1e; /* Dark background */
+            color: #e0e0e0; /* Light text color */
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            overscroll-behavior: contain; /* Prevent pull-to-refresh on mobile */
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        /* Form styling */
+        .auth-form {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+            box-sizing: border-box;
+        }
+        
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #db23e8; /* Your desired button color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            -webkit-appearance: none; /* Fix for iOS styling */
+            touch-action: manipulation; /* Improve touch behavior */
+            user-select: none; /* Prevent text selection during tap */
+            min-height: 44px; /* Ensure minimum touch target size */
+        }
+        
+        /* Active state for touch devices */
+        button:active {
+            background-color: #c31fcb;
+            transform: scale(0.98); /* Slight scale down effect when touched */
+        }
+        
+        button:hover {
+            background-color: #c31fcb;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .error {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff5555;
+        }
+        
+        .success {
+            background-color: rgba(0, 255, 0, 0.1);
+            border: 1px solid #44ff44;
+        }
+        
+        .auth-toggle {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .auth-toggle a {
+            color: #db23e8;
+            text-decoration: none;
+        }
+        
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: auto;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            border-top: 1px solid #333;
+        }
+        
+        footer a {
+            color: #db23e8;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px 10px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .auth-form {
+                padding: 15px;
+            }
+            
+            .logo-container {
+                margin-bottom: 10px;
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="HM Logo">
+    </div>
+    
+    <!-- App name under logo -->
+    <h1 style="margin-top: 0; margin-bottom: 15px; font-size: 2rem; color: #ffffff;">Hrana Mea</h1>
+
+    <h1>Autentificare</h1>
+    
+    <div class="auth-form">
+        <div id="message" class="message"></div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Utilizator sau Email</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Parolă</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit">Autentificare</button>
+        </form>
+        
+        <div class="auth-toggle">
+            <p>Nu ai un cont? <a href="register.html">Înregistrează-te</a></p>
+            <p>Nu ai primit emailul de verificare? <a href="resend-verification.html">Trimite din nou</a></p>
+        </div>
+    </div>
+    
+    <footer>
+        <a href="terms-viewer.html" class="terms-link">Termeni și condiții</a> | Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form');
+            const messageElement = document.getElementById('message');
+            
+            // Check if user is already logged in
+            fetch('/api/auth/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isLoggedIn) {
+                        window.location.href = 'index.html';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking auth status:', error);
+                });
+            
+            // Handle login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Reset message
+                messageElement.textContent = '';
+                messageElement.className = 'message';
+                messageElement.style.display = 'none';
+                
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include' // Ensure cookies are sent with the request
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        messageElement.textContent = data.message;
+                        messageElement.className = 'message success';
+                        messageElement.style.display = 'block';
+                        
+                        // Redirect to homepage after successful login
+                        // Increase timeout slightly to ensure cookie is set
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    } else {
+                        // Show error message
+                        messageElement.textContent = data.message;
+                        messageElement.className = 'message error';
+                        messageElement.style.display = 'block';
+                        
+                        // If account is not verified, show additional message with link
+                        if (data.requiresVerification) {
+                            messageElement.innerHTML = `${data.message}<br><br>Nu ai primit emailul de verificare? <a href="resend-verification.html" style="color: #db23e8;">Trimite din nou</a>`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during login:', error);
+                    messageElement.textContent = 'Eroare de conectare la server';
+                    messageElement.className = 'message error';
+                    messageElement.style.display = 'block';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

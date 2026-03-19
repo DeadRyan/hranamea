@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Instalează Aplicația Hrana Mea</title>
+    <meta name="description" content="Instalează aplicația Hrana Mea pe dispozitivul tău pentru acces rapid și funcționalități offline.">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: contain;
+        }
+        
+        .logo-container {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 200px;
+            height: auto;
+            max-width: 100%;
+        }
+        
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .card {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .step {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .step-number {
+            background-color: #db23e8;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #db23e8;
+        }
+        
+        .button {
+            background-color: #db23e8;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            background-color: #c31fcb;
+        }
+        
+        .button:active {
+            transform: scale(0.95);
+        }
+        
+        .button-secondary {
+            background-color: transparent;
+            border: 2px solid #db23e8;
+        }
+        
+        .device-icon {
+            width: 80px;
+            height: 80px;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .browser-instructions {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .device-specific {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        footer {
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            border-top: 1px solid #333;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .button {
+                width: 100%;
+                max-width: 300px;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="Hrana Mea Logo">
+    </div>
+    
+    <div class="container">
+        <h1>Instalează Aplicația Hrana Mea</h1>
+        
+        <div class="card">
+            <p>Instalează aplicația Hrana Mea pe dispozitivul tău pentru:</p>
+            <ul style="text-align: left; margin: 20px auto; max-width: 400px;">
+                <li>Acces rapid de pe ecranul principal</li>
+                <li>Funcționare fără conexiune la internet</li>
+                <li>Experiență completă de aplicație</li>
+                <li>Notificări importante (opțional)</li>
+            </ul>
+            
+            <div id="install-container">
+                <button id="btn-install-pwa" class="button">Instalează Aplicația</button>
+                <p id="install-status" style="margin-top: 10px; color: #aaa; font-size: 14px;">Apasă butonul pentru a instala aplicația</p>
+            </div>
+            
+            <div id="already-installed" style="display: none;">
+                <p style="color: #4CAF50; font-weight: bold;">Aplicația este deja instalată!</p>
+                <p>Poți accesa aplicația de pe ecranul principal al dispozitivului tău.</p>
+            </div>
+            
+            <div id="browser-not-compatible" style="display: none;">
+                <p style="color: #ff9800; font-weight: bold;">Browserul tău nu suportă instalarea de aplicații web.</p>
+                <p>Încearcă cu Google Chrome, Microsoft Edge, sau Safari pe iOS 16.4+.</p>
+            </div>
+            
+            <button id="btn-show-instructions" class="button button-secondary">Arată instrucțiuni manuale</button>
+        </div>
+        
+        <div id="browser-instructions" class="card browser-instructions">
+            <h2>Instrucțiuni de Instalare Manuală</h2>
+            
+            <div id="android-chrome" class="device-specific">
+                <h3>Chrome pe Android</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Deschide meniul Chrome</span>
+                    <p>Apasă pe cele trei puncte din colțul din dreapta sus.</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Alege "Adaugă la ecranul principal"</span>
+                    <p>Din meniul care apare, selectează opțiunea "Adaugă la ecranul principal".</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-title">Confirmă instalarea</span>
+                    <p>Apasă "Adaugă" în fereastra de dialog care apare.</p>
+                </div>
+            </div>
+            
+            <div id="ios-safari" class="device-specific">
+                <h3>Safari pe iPhone sau iPad</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Apasă butonul de partajare</span>
+                    <p>Apasă pe butonul de partajare (pătratul cu săgeată în sus) din partea de jos a ecranului.</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Alege "Adaugă la ecranul principal"</span>
+                    <p>Derulează în jos dacă este necesar pentru a găsi această opțiune.</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-title">Confirmă instalarea</span>
+                    <p>Apasă "Adaugă" în colțul din dreapta sus.</p>
+                </div>
+            </div>
+            
+            <div id="desktop" class="device-specific">
+                <h3>Chrome, Edge sau Opera pe Desktop</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Caută pictograma de instalare</span>
+                    <p>În bara de adrese, caută pictograma de instalare (un mic semn "+" în cerc).</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Apasă pe pictogramă</span>
+                    <p>Apasă pe pictograma de instalare din bara de adrese.</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-title">Confirmă instalarea</span>
+                    <p>Apasă "Instalează" în fereastra de dialog care apare.</p>
+                </div>
+            </div>
+        </div>
+        
+        <a href="index.html" class="button button-secondary">Înapoi la pagina principală</a>
+    </div>
+    
+    <footer>
+        <a href="terms-viewer.html" style="color: #db23e8; text-decoration: none;">Termeni și condiții</a> | Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+    
+    <script src="pwa-register.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnInstallPWA = document.getElementById('btn-install-pwa');
+            const btnShowInstructions = document.getElementById('btn-show-instructions');
+            const browserInstructions = document.getElementById('browser-instructions');
+            const installContainer = document.getElementById('install-container');
+            const alreadyInstalled = document.getElementById('already-installed');
+            const browserNotCompatible = document.getElementById('browser-not-compatible');
+            const installStatus = document.getElementById('install-status');
+            
+            // Device detection
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+            const isDesktop = !isIOS && !isAndroid;
+            
+            // Show appropriate device-specific instructions
+            const androidChrome = document.getElementById('android-chrome');
+            const iosSafari = document.getElementById('ios-safari');
+            const desktop = document.getElementById('desktop');
+            
+            if (isIOS) {
+                iosSafari.style.display = 'block';
+            } else if (isAndroid) {
+                androidChrome.style.display = 'block';
+            } else {
+                desktop.style.display = 'block';
+            }
+            
+            // Check if app is already installed
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone === true) {
+                installContainer.style.display = 'none';
+                alreadyInstalled.style.display = 'block';
+                btnShowInstructions.style.display = 'none';
+            }
+            
+            // Check if browser supports installation
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 76+ from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Enable the install button
+                btnInstallPWA.disabled = false;
+                btnInstallPWA.style.opacity = '1';
+                installStatus.textContent = 'Aplicația este disponibilă pentru instalare';
+            });
+            
+            // If no install prompt received after 3 seconds, possibly not supported
+            setTimeout(() => {
+                if (!deferredPrompt && 
+                    !window.matchMedia('(display-mode: standalone)').matches && 
+                    window.navigator.standalone !== true) {
+                    browserNotCompatible.style.display = 'block';
+                    installStatus.textContent = 'Instalarea automată nu este disponibilă';
+                    // Don't disable the button as it might work later
+                }
+            }, 3000);
+            
+            // Install button click handler
+            btnInstallPWA.addEventListener('click', async () => {
+                if (!deferredPrompt) {
+                    // If no prompt available, show instructions
+                    browserInstructions.style.display = 'block';
+                    installStatus.textContent = 'Folosește instrucțiunile manuale de mai jos';
+                    return;
+                }
+                
+                // Show the install prompt
+                deferredPrompt.prompt();
+                installStatus.textContent = 'Se instalează...';
+                
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    installStatus.textContent = 'Aplicație instalată cu succes!';
+                    btnInstallPWA.disabled = true;
+                    btnInstallPWA.style.opacity = '0.5';
+                    setTimeout(() => {
+                        installContainer.style.display = 'none';
+                        alreadyInstalled.style.display = 'block';
+                    }, 2000);
+                } else {
+                    installStatus.textContent = 'Instalare anulată. Încearcă din nou când ești gata.';
+                }
+                
+                // Clear the deferredPrompt
+                deferredPrompt = null;
+            });
+            
+            // Show instructions button click handler
+            btnShowInstructions.addEventListener('click', () => {
+                browserInstructions.style.display = 'block';
+                btnShowInstructions.style.display = 'none';
+            });
+            
+            // Handle app installed event
+            window.addEventListener('appinstalled', (evt) => {
+                installStatus.textContent = 'Aplicație instalată cu succes!';
+                btnInstallPWA.disabled = true;
+                btnInstallPWA.style.opacity = '0.5';
+                setTimeout(() => {
+                    installContainer.style.display = 'none';
+                    alreadyInstalled.style.display = 'block';
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

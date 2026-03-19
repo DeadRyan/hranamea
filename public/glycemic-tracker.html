@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Monitorizare Glicemie - Hrana Mea</title>
+    <meta name="description" content="Înregistrează și monitorizează valorile glicemice pentru un control mai bun al diabetului.">
+    <meta name="keywords" content="monitorizare glicemie, valori glicemice, diabet, sănătate">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <style>
+        /* Logo Styling */
+        .logo-container {
+            margin-bottom: 5px;
+            margin-top: 10px;
+            text-align: center;
+            width: 100px;
+            height: auto;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        .logo-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        /* Responsive Dark Theme Styling */
+        :root {
+            --vh: 1vh;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 5px 5px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            margin: 0;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+        
+        /* Main container */
+        .tracker-container {
+            width: 95%;
+            max-width: 600px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid #444;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            min-height: 70vh;
+            min-height: calc(var(--vh, 1vh) * 70);
+            max-height: 85vh;
+            max-height: calc(var(--vh, 1vh) * 85);
+            box-sizing: border-box;
+            transition: height 0.3s ease;
+            margin-bottom: 5px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* Input form styling */
+        .input-form {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            align-items: center;
+        }
+        
+        .input-form h2 {
+            margin-top: 0;
+            color: #db23e8;
+            font-size: 1.2rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .input-group label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .input-group input, 
+        .input-group select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: white;
+        }
+        
+        /* Button styling */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        button, .button {
+            padding: 14px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #db23e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+            min-height: 48px;
+            font-weight: 500;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        button:hover, .button:hover {
+            background-color: #c31fcb;
+        }
+        
+        button:active, .button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Option selection */
+        .option-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            justify-content: center;
+            max-width: 400px;
+        }
+        
+        .option-card {
+            background-color: #333;
+            border: 2px solid #444;
+            border-radius: 5px;
+            padding: 20px 15px;
+            flex: 1 0 45%;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Special styling for meal type buttons - dimensiuni ajustate */
+        .meal-types .option-card {
+            min-height: 48px; /* Ajustat la fel ca butonul */
+            padding: 14px 15px; /* Ajustat la fel ca butonul */
+            width: calc(50% - 5px);
+            max-width: none;
+            margin: 0 auto 5px;
+        }
+        
+        .option-card.selected {
+            border-color: #db23e8;
+            background-color: rgba(219, 35, 232, 0.15);
+        }
+        
+        .option-card i {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        /* Home button */
+        .home-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #db23e8;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            font-size: 14px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .home-btn:hover, .home-btn:active {
+            background-color: #c31fcb;
+            transform: scale(0.95);
+        }
+        
+        /* Camera overlay */
+        .camera-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        /* Glucometer guide styling */
+        #glucometer-guide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .camera-feed {
+            width: 100%;
+            max-width: 600px;
+            height: 70vh;
+            height: calc(var(--vh, 1vh) * 70);
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+        
+        .camera-actions {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            padding: 20px 0;
+            max-width: 600px;
+            gap: 10px;
+        }
+        
+        .camera-actions button {
+            flex: 1;
+            max-width: 200px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        /* View history section */
+        .history-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        
+        .history-entry {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-value {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        /* Form sections */
+        #input-method-section,
+        #manual-input-section,
+        #camera-input-section,
+        #meal-timing-section,
+        #meal-type-section,
+        #confirmation-section,
+        #value-validation-section {
+            display: none;
+        }
+        
+        #input-method-section.active,
+        #manual-input-section.active,
+        #camera-input-section.active,
+        #meal-timing-section.active,
+        #meal-type-section.active,
+        #confirmation-section.active,
+        #value-validation-section.active {
+            display: block;
+        }
+        
+        /* Value validation section styling */
+        #value-validation-section.active {
+            display: block;
+        }
+        
+        #detected-value {
+            border: 2px solid #db23e8;
+            font-size: 28px !important;
+            height: 60px;
+            transition: all 0.3s ease;
+        }
+        
+        #edited-value {
+            border: 2px solid #e67e22;
+            font-size: 28px !important;
+            height: 60px;
+        }
+        
+        /* Loading indicator */
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #db23e8;
+            animation: spin 1s ease-in-out infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Readings modal styling */
+        .readings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .readings-container {
+            width: 95%;
+            max-width: 500px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin: auto;
+            max-height: 80vh;
+            max-height: calc(var(--vh, 1vh) * 80);
+            overflow-y: auto;
+        }
+        
+        .readings-container h2 {
+            color: #db23e8;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .reading-item {
+            background-color: #333;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #db23e8;
+        }
+        
+        .reading-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .reading-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        .readings-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .no-readings {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px 5px;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+                margin-top: 10px;
+            }
+            
+            .option-card {
+                padding: 15px 10px;
+                min-height: 80px;
+                font-size: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .home-btn {
+                top: 10px;
+                left: 10px;
+                min-width: 70px;
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .input-form {
+                padding: 10px;
+            }
+            
+            .option-container {
+                gap: 8px;
+            }
+            
+            .confirmation-details {
+                font-size: 15px;
+                line-height: 1.4;
+            }
+            
+            .input-group label {
+                font-size: 15px;
+            }
+            
+            .input-group input,
+            .input-group select {
+                padding: 12px;
+                font-size: 16px; /* Prevent auto-zoom on iOS */
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .option-card {
+                flex: 1 0 100%; /* Full width on very small screens */
+                margin-bottom: 8px;
+                min-height: 60px;
+            }
+            
+            .option-container.meal-types {
+                max-width: 100%;
+                padding: 0 5px;
+            }
+            
+            .meal-types .option-card {
+                min-height: 50px;
+                padding: 8px 5px;
+            }
+            
+            h1 {
+                font-size: 1.1rem;
+            }
+            
+            .tracker-container {
+                min-height: 75vh;
+                min-height: calc(var(--vh, 1vh) * 75);
+            }
+            
+            .input-form h2 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="HM Logo">
+    </div>
+    
+    <h1>Monitorizare Glicemie</h1>
+    
+    <!-- Home button -->
+    <a href="asistent.html" class="home-btn" role="button" aria-label="Înapoi la asistent">
+        Înapoi
+    </a>
+    
+    <div class="tracker-container">
+        <div class="input-form">
+            <!-- Step 1: Choose Input Method -->
+            <div id="input-method-section" class="active">
+                <h2>Cum dorești să introduci valoarea?</h2>
+                <div class="option-container">
+                    <div class="option-card" data-method="manual">
+                        <i>📝</i>
+                        <span>Introdu valorile manual</span>
+                    </div>
+                    <div class="option-card" data-method="camera">
+                        <i>📷</i>
+                        <span>Fă o poză la ecranul aparatului</span>
+                    </div>
+                </div>
+                <button id="show-readings-btn" style="background-color: #2a6b34; margin-top: 15px; width: 100%; max-width: 400px; display: block; margin-left: auto; margin-right: auto;">Afișează citirile</button>
+            </div>
+            
+            <!-- Step 2a: Manual Input -->
+            <div id="manual-input-section">
+                <h2>Introdu valoarea glicemică</h2>
+                <div class="input-group">
+                    <label for="glycemic-value">Valoare glicemică (mg/dl)</label>
+                    <input type="number" id="glycemic-value" min="20" max="600" placeholder="Ex: 120">
+                </div>
+                <div class="button-group">
+                    <button id="back-to-method" class="secondary-btn">Înapoi</button>
+                    <button id="manual-continue">Continuă</button>
+                </div>
+            </div>
+            
+            <!-- Step 2b: Camera Input -->
+            <div id="camera-input-section">
+                <h2>Fotografiază ecranul aparatului</h2>
+                <p>Asigură-te că valoarea este vizibilă și clară în imagine.</p>
+                <button id="open-camera">Deschide Camera</button>
+                <div class="button-group">
+                    <button id="back-to-method-from-camera" class="secondary-btn">Înapoi</button>
+                    <button id="camera-continue" disabled>Continuă</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Choose Meal Timing -->
+            <div id="meal-timing-section">
+                <h2>Când ai efectuat testul?</h2>
+                <div class="option-container">
+                    <div class="option-card" data-timing="before">
+                        <span>Înainte de masă</span>
+                    </div>
+                    <div class="option-card" data-timing="after">
+                        <span>După masă</span>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="back-from-timing" class="secondary-btn">Înapoi</button>
+                    <button id="timing-continue">Continuă</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Choose Meal Type -->
+            <div id="meal-type-section">
+                <h2>Pentru ce masă?</h2>
+                <div class="option-container meal-types" style="display: flex; flex-wrap: wrap; justify-content: space-between; width: 100%; max-width: 400px;">
+                    <div class="option-card" data-meal="breakfast" style="flex: 0 0 calc(50% - 5px);">
+                        <span>Mic Dejun</span>
+                    </div>
+                    <div class="option-card" data-meal="lunch" style="flex: 0 0 calc(50% - 5px);">
+                        <span>Prânz</span>
+                    </div>
+                    <div class="option-card" data-meal="dinner" style="flex: 0 0 calc(50% - 5px);">
+                        <span>Cină</span>
+                    </div>
+                    <div class="option-card" data-meal="snack" style="flex: 0 0 calc(50% - 5px);">
+                        <span>Gustare</span>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="back-from-meal" class="secondary-btn">Înapoi</button>
+                    <button id="meal-continue">Continuă</button>
+                </div>
+            </div>
+            
+            <!-- Step 5: Confirmation -->
+            <div id="confirmation-section">
+                <h2>Confirmă înregistrarea</h2>
+                <div class="confirmation-details" style="background-color: #333; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <p><strong>Valoare glicemică:</strong> <span id="confirm-value">120 mg/dl</span></p>
+                    <p><strong>Momentul măsurătorii:</strong> <span id="confirm-timing">Înainte de masă</span></p>
+                    <p><strong>Masa:</strong> <span id="confirm-meal">Mic Dejun</span></p>
+                    <p><strong>Data și ora:</strong> <span id="confirm-datetime">12 mai 2025, 08:30</span></p>
+                </div>
+                <div class="button-group">
+                    <button id="back-from-confirm" class="secondary-btn">Înapoi</button>
+                    <button id="save-reading">Salvează</button>
+                </div>
+            </div>
+            
+            <!-- History section updated for readings -->
+            <div id="history-section" style="display: none;">
+                <h2>Istoric Valori Recente</h2>
+                <div id="history-entries" style="max-height: 300px; overflow-y: auto; width: 100%; border-radius: 5px; background-color: #333; padding: 10px; margin-bottom: 15px;">
+                    <!-- Will be populated dynamically -->
+                    <div class="loading-spinner" id="readings-loading"></div>
+                </div>
+                <button id="save-local-btn" style="background-color: #2a6b34; width: 100%; max-width: 400px; display: block; margin: 15px auto;">Salvează local</button>
+                <button id="close-history-btn" style="background-color: #666; width: 100%; max-width: 400px; display: block; margin: 10px auto;">Închide</button>
+            </div>
+            
+            <!-- Readings Modal -->
+            <div class="readings-overlay" id="readings-overlay">
+                <div class="readings-container">
+                    <h2>Istoricul citirilor glicemice</h2>
+                    <div id="readings-list">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="readings-actions">
+                        <button id="save-readings-local" style="background-color: #2a6b34;">Salvează local</button>
+                        <button id="close-readings" style="background-color: #666;">Închide</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Camera overlay -->
+    <div class="camera-overlay" id="camera-overlay">
+        <div class="camera-feed" id="camera-feed">
+            <video id="camera-video" autoplay playsinline style="width: 100%; height: 100%;"></video>
+            <canvas id="camera-canvas" style="display: none;"></canvas>
+            <!-- Glucometer overlay guide will be added dynamically -->
+        </div>
+        <div class="camera-actions">
+            <button id="capture-photo">Captează Imagine</button>
+            <button id="close-camera">Anulează</button>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer style="width: 100%; padding: 12px 0; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #333; margin-top: 10px;">
+        <a href="terms-viewer.html" class="terms-link" style="color: #db23e8; text-decoration: none; display: inline-block; padding: 8px; margin: 0 5px;">Termeni și condiții</a> | Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+    
+    <!-- Scripts -->
+    <!-- Removed client-side OCR in favor of server-side implementation -->
+    <script src="value-validation-server.js"></script>
+    <script src="glycemic-tracker.js"></script>
+    
+    <!-- Authentication check script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication status
+            fetch('/api/auth/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.isLoggedIn) {
+                        // User is not logged in, redirect to login page
+                        alert("Trebuie să fii autentificat pentru a accesa această funcționalitate.");
+                        window.location.href = "login.html";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking auth status:', error);
+                    alert("Eroare la verificarea autentificării. Te rugăm să încerci din nou.");
+                    window.location.href = "index.html";
+                });
+        });
+    </script>
+</body>
+</html>

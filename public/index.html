@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Stil de viață și alimentație sănătoasă</title>
+    <meta name="description" content="Sfaturi și rețete pentru un stil de viață sănătos și o alimentație echilibrată. Meniu personalizat și sprijin pentru sănătate.">
+    <meta name="keywords" content="stil de viață sănătos, alimentație sănătoasă, rețete sănătoase, planuri alimentare, sănătate, nutriție">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <style>
+        /* Logo Styling */
+        .logo-container {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 200px;
+            height: auto;
+            max-width: 100%;
+        }
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Responsive Dark Theme Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            background-color: #1e1e1e; /* Dark background */
+            color: #e0e0e0; /* Light text color */
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            overscroll-behavior: contain; /* Prevent pull-to-refresh on mobile */
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #db23e8;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        h1 {
+            color: #ffffff; /* White heading */
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+        }
+        /* Responsive Button Container */
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        /* SVG icon styling */
+        .stethoscope-svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: inline-block;
+        }
+        
+        /* Regime button styling */
+        .regime-button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid #db23e8;
+            border-radius: 5px;
+            background-color: transparent;
+            color: white;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 220px;
+        }
+
+        .regime-button.active {
+            background-color: #db23e8;
+        }
+
+        .regime-button:hover {
+            background-color: rgba(219, 35, 232, 0.3);
+        }
+
+        /* Disabled meal buttons */
+        .meal-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .assistant-btn:hover {
+            background-color: #1a2530;
+        }
+        button, .button { /* Style for main meal buttons and button-class anchors */
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #db23e8; /* Your desired button color */
+            color: white; /* Keep text white */
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 110px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation; /* Improve touch behavior */
+        }
+        
+        button:active, .button:active {
+            transform: scale(0.95); /* Slight scale down effect when touched */
+            background-color: #c31fcb; /* Same as hover */
+        }
+        
+        button::after, .button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(30, 30);
+                opacity: 0;
+            }
+        }
+        
+        button:focus:not(:active)::after, .button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        button:hover, .button:hover { /* Hover effect for main meal buttons */
+            background-color: #c31fcb; /* Slightly darker shade for hover */
+        }
+        #recipe-display {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #444; /* Darker border */
+            background-color: #2a2a2a; /* Slightly lighter dark background */
+            color: #e0e0e0; /* Light text inside display */
+            width: 100%;
+            max-width: 600px;
+            text-align: left;
+            display: none; /* Hidden initially */
+            border-radius: 5px; /* Rounded corners */
+            box-sizing: border-box;
+            max-height: 50vh; /* Limit height to 50% of viewport height */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+        #recipe-display h2 {
+            margin-top: 0;
+            color: #db23e8; /* Use button color for recipe title */
+            font-size: 1.4rem;
+        }
+        /* Styles for Share/Save buttons */
+        .action-buttons {
+    margin-top: 15px;
+    display: none; /* Hidden initially when no recipe is shown */
+    width: 100%;
+}
+/* When visible, use flex display */
+.action-buttons.visible {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+}
+        .action-buttons button, .action-buttons .button { /* Style specifically for action buttons */
+            background-color: #db23e8; /* Use same theme color */
+            color: white;
+            font-size: 14px;
+            padding: 12px 15px; /* Larger padding for better touch targets */
+            flex: 1;
+            min-width: 140px;
+            border-radius: 5px;
+            touch-action: manipulation; /* Improve touch behavior */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Direct Facebook icon styling (more reliable) */
+        .facebook-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: white;
+            border-radius: 2px;
+            margin-right: 8px;
+            position: relative;
+            vertical-align: middle;
+        }
+        
+        .facebook-icon::after {
+            content: 'f';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #3b5998; /* Facebook blue */
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Assistant button icon */
+        .assistant-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            position: relative;
+            vertical-align: middle;
+        }
+        
+        .assistant-icon::before {
+            content: '';
+            position: absolute;
+            left: 1px;
+            top: 1px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid white;
+            background-color: transparent;
+        }
+        
+        .assistant-icon::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 4px;
+            width: 2px;
+            height: 8px;
+            background-color: white;
+            border-radius: 1px;
+            box-shadow: 4px -3px 0 0 white;
+            transform: rotate(30deg);
+        }
+        
+        #btn-save::before {
+            content: '💾 ';
+            margin-right: 5px;
+        }
+        .action-buttons button:hover, .action-buttons .button:hover { /* Hover effect for action buttons */
+            background-color: #c31fcb; /* Slightly darker shade for hover */
+        }
+        
+        /* Style for anchor button */
+        .button {
+            display: inline-block;
+            text-decoration: none;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px 10px;
+            }
+            h1 {
+                font-size: 1.4rem;
+                margin-bottom: 0.8rem;
+            }
+            .header-container h1 {
+                font-size: 1.3rem;
+            }
+            .button-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin: 15px 0;
+            }
+            button, .button, .assistant-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+                margin: 0;
+                min-width: calc(50% - 8px);
+                flex: 0 0 calc(50% - 8px);
+            }
+            
+            .assistant-btn {
+                flex: 0 0 100%;
+                min-width: 100%;
+                justify-content: center;
+                white-space: nowrap;
+            }
+            
+            .stethoscope-svg {
+                width: 16px;
+                height: 16px;
+                margin-right: 5px;
+                vertical-align: middle;
+            }
+            #recipe-display {
+                padding: 15px;
+                margin-top: 15px;
+                max-height: 60vh; /* Taller on mobile */
+            }
+            #recipe-display h2 {
+                font-size: 1.2rem;
+            }
+            .action-buttons button, .action-buttons .button {
+                min-width: 0;
+                padding: 8px 5px;
+                font-size: 13px;
+                flex: 1;
+            }
+            .logo-container {
+                margin-bottom: 10px;
+                width: 150px;
+            }
+            .tagline {
+                font-size: 13px;
+                margin: 8px 0 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/logo.png" alt="HM Logo">
+    </div>
+    
+    <!-- Header container for app name and user section -->
+    <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin-bottom: 15px;">
+        <!-- App name moved to left corner -->
+        <h1 style="margin: 0; font-size: 1.8rem; color: #ffffff; text-align: left;">Hrana Mea</h1>
+        
+        <!-- User info/login section in right corner -->
+        <div id="user-section" style="text-align: right; z-index: 100;">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <h1>Viață și Mâncare Sănătoasă</h1>
+    
+    <!-- Regime selection buttons -->
+    <div class="regime-container" style="display: flex; justify-content: center; gap: 15px; width: 100%; max-width: 600px; margin-bottom: 20px;">
+        <button id="btn-regime-sanatos" class="regime-button">Regim Sănătos</button>
+        <button id="btn-regime-diabetic" class="regime-button">Regim Diabetic</button>
+    </div>
+
+    <div class="button-container">
+        <button id="btn-micdejun" class="meal-button disabled" disabled>Mic dejun</button>
+        <button id="btn-pranz" class="meal-button disabled" disabled>Prânz</button>
+        <button id="btn-cina" class="meal-button disabled" disabled>Cină</button>
+        <button id="btn-gustare" class="meal-button disabled" disabled>Gustare</button>
+    </div>
+    
+    <!-- Assistant button -->
+    <div class="button-container" style="margin-top: 10px;">
+        <a href="asistent.html" class="assistant-btn" style="display: flex; align-items: center; justify-content: center; background-color: #2c3e50; text-decoration: none; padding: 12px 20px; border-radius: 5px; color: white; font-size: 16px; width: 100%; max-width: 600px; box-sizing: border-box; transition: all 0.3s ease; cursor: pointer; text-align: center;">
+            <svg class="stethoscope-svg" viewBox="0 0 292.24 292.24" fill="white">
+                <path d="M260.373,66.065c-17.573,0-31.868,14.144-31.868,31.533c0,15.221,10.957,27.955,25.477,30.894
+                    v122.606c0,11.823-9.719,21.44-21.668,21.44c-11.908,0-21.601-9.559-21.662-21.329v-73.31c0-20.162-16.578-36.565-36.953-36.565
+                    c-19.458,0-35.415,14.97-36.816,33.874h-0.125v2.472c0,0.073-0.012,0.146-0.012,0.219h0.012v73.129
+                    c0,11.82-9.719,21.437-21.668,21.437c-11.923,0-21.624-9.582-21.665-21.367L93.419,164.4c36.559-3.794,65.15-34.46,65.15-71.617
+                    V44.808c0-4.177-3.424-7.562-7.644-7.562h-19.458V23.505c0-4.177-3.424-7.562-7.644-7.562h-19.794
+                    c-4.22,0-7.644,3.386-7.644,7.562v40.721c0,4.177,3.424,7.562,7.644,7.562h19.794c4.22,0,7.644-3.386,7.644-7.562V52.367h11.815
+                    v40.408c0,31.375-25.798,56.899-57.509,56.899c-31.708,0-57.506-25.523-57.506-56.899V52.37h10.79v11.858
+                    c0,4.177,3.424,7.562,7.644,7.562h19.797c4.22,0,7.644-3.386,7.644-7.562V23.505c0-4.177-3.424-7.562-7.644-7.562h-19.8
+                    c-4.22,0-7.644,3.386-7.644,7.562v13.738H20.623c-4.22,0-7.644,3.386-7.644,7.562v47.971c0,37.16,28.591,67.826,65.15,71.617
+                    l0.006,86.628h-0.003c0,0.023,0.003,0.047,0.003,0.07v1.731h0.088c0.96,19.321,17.1,34.761,36.862,34.761
+                    c20.375,0,36.953-16.403,36.953-36.562v-73.342c0.12-11.721,9.783-21.221,21.656-21.221c11.946,0,21.668,9.617,21.668,21.44
+                    v73.199h-0.006c0,0.038,0.006,0.073,0.006,0.108v1.433h0.073c0.826,19.444,17.024,35.021,36.874,35.021
+                    c20.378,0,36.956-16.403,36.956-36.565V127.855c13.253-3.82,22.975-15.927,22.975-30.257
+                    C292.242,80.208,277.946,66.065,260.373,66.065z"/>
+                <ellipse cx="247.394" cy="86.232" rx="8.7" ry="8.61" fill="white"/>
+            </svg>
+            Asistent Virtual
+        </a>
+    </div>
+
+    <div id="recipe-display">
+        <!-- Recipe content will be loaded here -->
+        <h2>Rețeta Generată <span class="loading-spinner" id="loading-spinner"></span></h2>
+        <p id="recipe-text">Apasă un buton pentru a genera o rețetă.</p>
+        <div class="action-buttons" id="recipe-actions">
+            <a href="asistent.html" id="btn-assistant" class="button"><span class="assistant-icon"></span>Asistent</a>
+            <button id="btn-facebook"><span class="facebook-icon"></span>Partajează Facebook</button>
+            <button id="btn-save">Salvează Local</button>
+        </div>
+    </div>
+    
+    <!-- Added mobile app install prompt -->
+    <div id="install-app" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #333; padding: 15px; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 100;">
+        <p style="margin: 0 0 10px 0;">Adaugă aplicația pe ecranul principal</p>
+        <button id="btn-install" style="background: #db23e8; border: none; color: white; padding: 8px 15px; border-radius: 5px;">Instalează</button>
+        <button id="btn-close-install" style="background: #444; border: none; color: white; padding: 8px 15px; border-radius: 5px; margin-left: 10px;">Nu acum</button>
+    </div>
+
+    <!-- Footer -->
+    <footer style="width: 100%; padding: 15px 0; text-align: center; font-size: 14px; color: #888; border-top: 1px solid #333; margin-top: 20px;">
+        <a href="terms-viewer.html" class="terms-link" style="color: #db23e8; text-decoration: none;">Termeni și condiții</a> | Toate drepturile rezervate - HranaMea.ro - 2025
+    </footer>
+
+    <!-- JavaScript link -->
+    <script src="app.js"></script>
+    
+    <!-- Authentication script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userSection = document.getElementById('user-section');
+            
+            // Function to update UI based on authentication status
+            function updateAuthUI(isLoggedIn, user) {
+                if (isLoggedIn && user) {
+                    // Use the actual username from the user object
+                    const displayName = user.username || user.email.split('@')[0] || 'Utilizator';
+                    
+                    userSection.innerHTML = `
+                        <button id="logout-btn" style="background-color: #db23e8; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; min-width: 80px; margin: 0; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center;">Deconectare</button>
+                    `;
+                    
+                    // Add logout functionality
+                    document.getElementById('logout-btn').addEventListener('click', function() {
+                        fetch('/api/auth/logout')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.reload();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error during logout:', error);
+                            });
+                    });
+                } else {
+                    userSection.innerHTML = `
+                        <a href="login.html" style="background-color: #db23e8; color: white; text-decoration: none; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; min-width: 80px; text-align: center; font-size: 12px;">Autentificare</a>
+                    `;
+                }
+            }
+            
+            // Check authentication status
+            fetch('/api/auth/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateAuthUI(data.isLoggedIn, data.user);
+                })
+                .catch(error => {
+                    console.error('Error checking auth status:', error);
+                    updateAuthUI(false);
+                });
+        });
+    </script>
+    
+    <!-- Regime selection script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initializing regime buttons...");
+            
+            // Variabilă globală pentru urmărirea regimului selectat
+            window.selectedRegime = localStorage.getItem('selectedRegime') || null;
+            console.log("Initial regime from localStorage:", window.selectedRegime);
+            
+            // Inițializarea butoanelor de regim
+            function initializeRegimeButtons() {
+                const btnRegimeSanatos = document.getElementById('btn-regime-sanatos');
+                const btnRegimeDiabetic = document.getElementById('btn-regime-diabetic');
+                const mealButtons = document.querySelectorAll('.meal-button');
+                
+                console.log("Found meal buttons:", mealButtons.length);
+                
+                // Verifică dacă există un regim salvat și actualizează interfața
+                if (window.selectedRegime) {
+                    console.log("Activating saved regime:", window.selectedRegime);
+                    
+                    if (window.selectedRegime === 'sanatos') {
+                        btnRegimeSanatos.classList.add('active');
+                    } else {
+                        btnRegimeDiabetic.classList.add('active');
+                    }
+                    
+                    // Activează butoanele de mese
+                    mealButtons.forEach(button => {
+                        button.classList.remove('disabled');
+                        button.disabled = false;
+                    });
+                }
+                
+                // Asigură-te că ambele butoane există înainte de a adăuga event listeners
+                if (btnRegimeSanatos && btnRegimeDiabetic) {
+                    // Adaugă event listeners pentru butoanele de regim
+                    btnRegimeSanatos.addEventListener('click', function() {
+                        console.log("Selecting regime: sanatos");
+                        selectRegime('sanatos');
+                    });
+                    
+                    btnRegimeDiabetic.addEventListener('click', function() {
+                        console.log("Selecting regime: diabetic");
+                        selectRegime('diabetic');
+                    });
+                } else {
+                    console.error("Regime buttons not found in DOM");
+                }
+            }
+            
+            // Funcție pentru selectarea unui regim
+            function selectRegime(regime) {
+                window.selectedRegime = regime;
+                localStorage.setItem('selectedRegime', regime);
+                console.log("Regime selected and saved:", regime);
+                
+                // Actualizează interfața
+                const btnRegimeSanatos = document.getElementById('btn-regime-sanatos');
+                const btnRegimeDiabetic = document.getElementById('btn-regime-diabetic');
+                const mealButtons = document.querySelectorAll('.meal-button');
+                
+                // Actualizează butoanele de regim
+                if (btnRegimeSanatos && btnRegimeDiabetic) {
+                    btnRegimeSanatos.classList.toggle('active', regime === 'sanatos');
+                    btnRegimeDiabetic.classList.toggle('active', regime === 'diabetic');
+                }
+                
+                // Activează butoanele de mese
+                console.log("Enabling meal buttons");
+                mealButtons.forEach(button => {
+                    button.classList.remove('disabled');
+                    button.disabled = false;
+                });
+            }
+            
+            // Inițializează butoanele de regim
+            initializeRegimeButtons();
+            
+            // Forțează selectarea unui regim dacă nu există niciunul (pentru debugging)
+            if (!window.selectedRegime) {
+                console.log("No regime selected, defaulting to diabetic for testing");
+                selectRegime('diabetic');
+            }
+        });
+    </script>
+</body>
+</html>
