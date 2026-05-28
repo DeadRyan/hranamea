@@ -210,7 +210,7 @@ router.post('/message', (req, res) => {
                 
                 // Call X.ai API using our custom function
                 callXAI('chat/completions', {
-                    model: 'grok-beta',
+                    model: 'grok-3',
                     messages: conversationHistory,
                     max_tokens: 500,
                     temperature: 0.7,
@@ -334,7 +334,7 @@ router.post('/analyze-image', upload.single('image'), (req, res) => {
         
         // Call X.ai's Vision model with our custom function
         callXAI('chat/completions', {
-            model: 'grok-beta',
+            model: 'grok-3',
             messages: [
                 {
                     role: 'system',
