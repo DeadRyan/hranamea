@@ -8,19 +8,19 @@ const session = require('express-session');
 const cors = require('cors');
 const https = require('https');
 
-// Function to call X.ai API using HTTP client (compatible with Node.js 14+)
-function callXAI(endpoint, data) {
+// Function to call DeepSeek API (OpenAI-compatible)
+function callDeepSeek(endpoint, data) {
     return new Promise((resolve, reject) => {
-        const apiKey = process.env.XAI_API_KEY;
+        const apiKey = process.env.DEEPSEEK_API_KEY;
         
         if (!apiKey) {
-            return reject(new Error('X.ai API key is not set in environment variables'));
+            return reject(new Error('DeepSeek API key is not set in environment variables'));
         }
         
         const jsonData = JSON.stringify(data);
         
         const options = {
-            hostname: 'api.x.ai',
+            hostname: 'api.deepseek.com',
             port: 443,
             path: `/v1/${endpoint}`,
             method: 'POST',
@@ -44,69 +44,16 @@ function callXAI(endpoint, data) {
                     if (res.statusCode >= 200 && res.statusCode < 300) {
                         resolve(parsedData);
                     } else {
-                        reject(new Error(parsedData.error?.message || `X.ai API error: ${res.statusCode}`));
+                        reject(new Error(parsedData.error?.message || `DeepSeek API error: ${res.statusCode}`));
                     }
                 } catch (error) {
-                    reject(new Error(`Failed to parse X.ai response: ${error.message}`));
+                    reject(new Error(`Failed to parse DeepSeek response: ${error.message}`));
                 }
             });
         });
         
         req.on('error', (error) => {
-            reject(new Error(`X.ai API request failed: ${error.message}`));
-        });
-        
-        req.write(jsonData);
-        req.end();
-    });
-}
-
-// Fallback to OpenAI if X.ai fails
-function callOpenAI(endpoint, data) {
-    return new Promise((resolve, reject) => {
-        const apiKey = process.env.OPENAI_API_KEY;
-        
-        if (!apiKey) {
-            return reject(new Error('OpenAI API key is not set in environment variables'));
-        }
-        
-        const jsonData = JSON.stringify(data);
-        
-        const options = {
-            hostname: 'api.openai.com',
-            port: 443,
-            path: `/v1/${endpoint}`,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Length': Buffer.byteLength(jsonData)
-            }
-        };
-        
-        const req = https.request(options, (res) => {
-            let responseData = '';
-            
-            res.on('data', (chunk) => {
-                responseData += chunk;
-            });
-            
-            res.on('end', () => {
-                try {
-                    const parsedData = JSON.parse(responseData);
-                    if (res.statusCode >= 200 && res.statusCode < 300) {
-                        resolve(parsedData);
-                    } else {
-                        reject(new Error(parsedData.error?.message || `OpenAI API error: ${res.statusCode}`));
-                    }
-                } catch (error) {
-                    reject(new Error(`Failed to parse OpenAI response: ${error.message}`));
-                }
-            });
-        });
-        
-        req.on('error', (error) => {
-            reject(new Error(`OpenAI API request failed: ${error.message}`));
+            reject(new Error(`DeepSeek API request failed: ${error.message}`));
         });
         
         req.write(jsonData);
@@ -208,42 +155,34 @@ router.post('/message', (req, res) => {
                     });
                 }
                 
-                // Call X.ai API using our custom function
-                callXAI('chat/completions', {
-                    model: 'grok-3',
+                // Call DeepSeek API
+                callDeepSeek('chat/completions', {
+                    model: 'deepseek-chat',
                     messages: conversationHistory,
                     max_tokens: 500,
                     temperature: 0.7,
                 })
                 .then(response => {
-                    // Ensure aiResponse is a string
                     let aiResponse = '';
                     if (response && response.choices && response.choices[0] && response.choices[0].message) {
                         aiResponse = response.choices[0].message.content || '';
                     } else {
-                        console.error('Unexpected response format from X.ai:', response);
+                        console.error('Unexpected response format from DeepSeek:', response);
                         aiResponse = 'Nu am putut procesa răspunsul. Te rog să încerci din nou.';
                     }
                     
-                    // Save user message to database
+                    // Save user message and AI response to database
                     db.query(
                         'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
                         [conversationId, 'user', message],
                         (err) => {
-                            if (err) {
-                                console.error('Error saving user message:', err);
-                            }
+                            if (err) console.error('Error saving user message:', err);
                             
-                            // Save AI response to database
                             db.query(
                                 'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
                                 [conversationId, 'assistant', aiResponse],
                                 (err) => {
-                                    if (err) {
-                                        console.error('Error saving AI response:', err);
-                                    }
-                                    
-                                    // Return response to client
+                                    if (err) console.error('Error saving AI response:', err);
                                     res.json({ response: aiResponse });
                                 }
                             );
@@ -251,57 +190,10 @@ router.post('/message', (req, res) => {
                     );
                 })
                 .catch(error => {
-                    console.error('X.ai API error:', error);
-                    console.log('Falling back to OpenAI API...');
-                    
-                    // Fall back to OpenAI
-                    callOpenAI('chat/completions', {
-                        model: 'gpt-3.5-turbo',
-                        messages: conversationHistory,
-                        max_tokens: 500,
-                        temperature: 0.7,
-                    })
-                    .then(response => {
-                        // Ensure aiResponse is a string
-                        let aiResponse = '';
-                        if (response && response.choices && response.choices[0] && response.choices[0].message) {
-                            aiResponse = response.choices[0].message.content || '';
-                        } else {
-                            console.error('Unexpected response format from OpenAI:', response);
-                            aiResponse = 'Nu am putut procesa răspunsul. Te rog să încerci din nou.';
-                        }
-                        
-                        // Save user message to database
-                        db.query(
-                            'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
-                            [conversationId, 'user', message],
-                            (err) => {
-                                if (err) {
-                                    console.error('Error saving user message:', err);
-                                }
-                                
-                                // Save AI response to database
-                                db.query(
-                                    'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
-                                    [conversationId, 'assistant', aiResponse],
-                                    (err) => {
-                                        if (err) {
-                                            console.error('Error saving AI response:', err);
-                                        }
-                                        
-                                        // Return response to client
-                                        res.json({ response: aiResponse });
-                                    }
-                                );
-                            }
-                        );
-                    })
-                    .catch(fallbackError => {
-                        console.error('OpenAI API error after fallback:', fallbackError);
-                        res.status(500).json({
-                            error: 'Error communicating with AI service',
-                            details: fallbackError.message
-                        });
+                    console.error('DeepSeek API error:', error);
+                    res.status(500).json({
+                        error: 'Error communicating with AI service',
+                        details: error.message
                     });
                 });
             }
@@ -332,37 +224,28 @@ router.post('/analyze-image', upload.single('image'), (req, res) => {
         const imageBuffer = fs.readFileSync(req.file.path);
         const base64Image = imageBuffer.toString('base64');
         
-        // Call X.ai's Vision model with our custom function
-        callXAI('chat/completions', {
-            model: 'grok-3',
+        // Call DeepSeek for text-based nutritional analysis
+        callDeepSeek('chat/completions', {
+            model: 'deepseek-chat',
             messages: [
                 {
                     role: 'system',
-                    content: 'Ești un asistent nutrițional pentru aplicația "Hrana Mea". Analizează imaginile cu mâncare și oferă informații nutriționale. Răspunde în română.'
+                    content: 'Ești un asistent nutrițional pentru aplicația "Hrana Mea". Analizează descrierile de mâncare și oferă informații nutriționale. Răspunde în română.'
                 },
                 {
                     role: 'user',
-                    content: [
-                        { type: 'text', text: imagePrompt },
-                        {
-                            type: 'image_url',
-                            image_url: {
-                                url: `data:image/jpeg;base64,${base64Image}`
-                            }
-                        }
-                    ]
+                    content: imagePrompt + '\n\n[Notă: utilizatorul a încărcat o imagine cu mâncare. Oferă sfaturi nutriționale generale bazate pe descrierea de mai sus.]'
                 }
             ],
             max_tokens: 500
         })
         .then(response => {
-            // Ensure aiResponse is a string
             let aiResponse = '';
             if (response && response.choices && response.choices[0] && response.choices[0].message) {
                 aiResponse = response.choices[0].message.content || '';
             } else {
-                console.error('Unexpected response format from X.ai:', response);
-                aiResponse = 'Am analizat imaginea, dar nu am putut prelucra răspunsul. Te rog să încerci din nou sau să contactezi suportul.';
+                console.error('Unexpected response format from DeepSeek:', response);
+                aiResponse = 'Am analizat imaginea, dar nu am putut prelucra răspunsul. Te rog să încerci din nou.';
             }
             
             // Save the interaction in the database
@@ -370,19 +253,14 @@ router.post('/analyze-image', upload.single('image'), (req, res) => {
                 'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
                 [conversationId, 'user', `[Image uploaded with prompt: ${imagePrompt}]`],
                 (err) => {
-                    if (err) {
-                        console.error('Error saving image upload message:', err);
-                    }
+                    if (err) console.error('Error saving image upload message:', err);
                     
                     db.query(
                         'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
                         [conversationId, 'assistant', aiResponse],
                         (err) => {
-                            if (err) {
-                                console.error('Error saving image analysis response:', err);
-                            }
+                            if (err) console.error('Error saving image analysis response:', err);
                             
-                            // Delete temporary file after processing
                             fs.unlink(req.file.path, (err) => {
                                 if (err) console.error('Error deleting temp file:', err);
                             });
@@ -394,82 +272,15 @@ router.post('/analyze-image', upload.single('image'), (req, res) => {
             );
         })
         .catch(error => {
-            console.error('X.ai Vision API error:', error);
-            console.log('Falling back to OpenAI Vision API...');
+            console.error('DeepSeek image analysis error:', error);
             
-            // Fall back to OpenAI Vision API
-            callOpenAI('chat/completions', {
-                model: 'gpt-4o',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'Ești un asistent nutrițional pentru aplicația "Hrana Mea". Analizează imaginile cu mâncare și oferă informații nutriționale. Răspunde în română.'
-                    },
-                    {
-                        role: 'user',
-                        content: [
-                            { type: 'text', text: imagePrompt },
-                            {
-                                type: 'image_url',
-                                image_url: {
-                                    url: `data:image/jpeg;base64,${base64Image}`
-                                }
-                            }
-                        ]
-                    }
-                ],
-                max_tokens: 500
-            })
-            .then(response => {
-                // Ensure aiResponse is a string
-                let aiResponse = '';
-                if (response && response.choices && response.choices[0] && response.choices[0].message) {
-                    aiResponse = response.choices[0].message.content || '';
-                } else {
-                    console.error('Unexpected response format from OpenAI:', response);
-                    aiResponse = 'Am analizat imaginea, dar nu am putut prelucra răspunsul. Te rog să încerci din nou sau să contactezi suportul.';
-                }
-                
-                // Save the interaction in the database
-                db.query(
-                    'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
-                    [conversationId, 'user', `[Image uploaded with prompt: ${imagePrompt}]`],
-                    (err) => {
-                        if (err) {
-                            console.error('Error saving image upload message:', err);
-                        }
-                        
-                        db.query(
-                            'INSERT INTO openai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
-                            [conversationId, 'assistant', aiResponse],
-                            (err) => {
-                                if (err) {
-                                    console.error('Error saving image analysis response:', err);
-                                }
-                                
-                                // Delete temporary file after processing
-                                fs.unlink(req.file.path, (err) => {
-                                    if (err) console.error('Error deleting temp file:', err);
-                                });
-                                
-                                res.json({ response: aiResponse });
-                            }
-                        );
-                    }
-                );
-            })
-            .catch(fallbackError => {
-                console.error('OpenAI Vision API error after fallback:', fallbackError);
-                
-                // Delete temporary file after processing
-                fs.unlink(req.file.path, (err) => {
-                    if (err) console.error('Error deleting temp file:', err);
-                });
-                
-                res.status(500).json({
-                    error: 'Error analyzing image',
-                    details: fallbackError.message
-                });
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error('Error deleting temp file:', err);
+            });
+            
+            res.status(500).json({
+                error: 'Error analyzing image',
+                details: error.message
             });
         });
     } catch (error) {
