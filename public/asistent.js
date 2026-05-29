@@ -654,9 +654,39 @@ www.hranamea.ro`;
                             userData: JSON.stringify(userData)
                         })
                     })
-                    .then(r => r.json())
-                    .then(data => console.log("Profile saved to server:", data))
-                    .catch(error => console.error('Error updating profile on server:', error));
+                    .then(r => {
+                        if (!r.ok) {
+                            if (r.status === 401) {
+                                throw new Error('NOT_LOGGED_IN');
+                            }
+                            throw new Error('Server error: ' + r.status);
+                        }
+                        return r.json();
+                    })
+                    .then(data => {
+                        console.log("Profile saved to server:", data);
+                        // Show confirmation to user
+                        const confirmMsg = document.createElement('div');
+                        confirmMsg.classList.add('message', 'ai-message');
+                        confirmMsg.style.cssText = 'background:#2d4a2d; border-left: 3px solid #4caf50; padding:10px; border-radius:8px;';
+                        confirmMsg.textContent = '✅ Datele tale au fost salvate în baza de date!';
+                        chatMessages.appendChild(confirmMsg);
+                        scrollChatToBottom();
+                    })
+                    .catch(error => {
+                        console.error('Error updating profile on server:', error);
+                        const errMsg = document.createElement('div');
+                        errMsg.classList.add('message', 'ai-message');
+                        if (error.message === 'NOT_LOGGED_IN') {
+                            errMsg.style.cssText = 'background:#4a2d2d; border-left: 3px solid #f44336; padding:10px; border-radius:8px;';
+                            errMsg.innerHTML = '⚠️ Trebuie să fii <a href="login.html" style="color:#ff6b6b;">autentificat</a> pentru a salva datele în contul tău. Datele au fost salvate local în acest browser.';
+                        } else {
+                            errMsg.style.cssText = 'background:#4a3520; border-left: 3px solid #ff9800; padding:10px; border-radius:8px;';
+                            errMsg.textContent = '⚠️ Nu s-a putut salva pe server (' + error.message + '). Datele au fost salvate local în acest browser.';
+                        }
+                        chatMessages.appendChild(errMsg);
+                        scrollChatToBottom();
+                    });
                 } catch (e) {
                     console.error("Error saving profile:", e);
                 }
