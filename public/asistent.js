@@ -983,10 +983,14 @@ www.hranamea.ro`;
     
     function scrollChatToBottom() {
         if (chatMessagesEl) {
+            // Force reflow then scroll
+            chatMessagesEl.style.display = 'none';
+            chatMessagesEl.offsetHeight;
+            chatMessagesEl.style.display = '';
             chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
             setTimeout(() => {
                 chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-            }, 100);
+            }, 300);
         }
     }
     
