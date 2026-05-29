@@ -159,7 +159,7 @@ router.post('/message', (req, res) => {
                 callDeepSeek('chat/completions', {
                     model: 'deepseek-chat',
                     messages: conversationHistory,
-                    max_tokens: 500,
+                    max_tokens: 2000,
                     temperature: 0.7,
                 })
                 .then(response => {
@@ -237,7 +237,7 @@ router.post('/analyze-image', upload.single('image'), (req, res) => {
                     content: imagePrompt + '\n\n[Notă: utilizatorul a încărcat o imagine cu mâncare. Oferă sfaturi nutriționale generale bazate pe descrierea de mai sus.]'
                 }
             ],
-            max_tokens: 500
+            max_tokens: 2000
         })
         .then(response => {
             let aiResponse = '';
