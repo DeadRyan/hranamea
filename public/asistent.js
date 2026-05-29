@@ -605,7 +605,7 @@ www.hranamea.ro`;
                         <option value="None">Nu am diabet încă, doar verificare</option>
                     </select>
                 </div>
-                <button id="submit-data" class="form-submit">Salvează datele</button>
+                <button id="submit-data" class="form-submit" type="button">Salvează datele</button>
             `;
             
             chatMessages.appendChild(formElement);
