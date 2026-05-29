@@ -605,60 +605,60 @@ www.hranamea.ro`;
                         <option value="None">Nu am diabet încă, doar verificare</option>
                     </select>
                 </div>
-                <button id="submit-data" class="form-submit" type="button">Salvează datele</button>
+                <button id="btn-save-profile" class="form-submit" style="background:#db23e8;color:white;border:none;padding:10px 15px;border-radius:5px;cursor:pointer;width:100%;margin-top:10px;">Salvează datele</button>
             `;
             
             chatMessages.appendChild(formElement);
             scrollChatToBottom();
             
-            // Use direct onclick + addEventListener for maximum compatibility
-            const submitBtn = document.getElementById('submit-data');
-            console.log("Submit button found:", !!submitBtn);
-            
-            if (!submitBtn) {
-                console.error("CRITICAL: submit-data button not found in DOM!");
-                return;
-            }
-            
-            // Direct onclick as primary (most reliable)
-            submitBtn.onclick = function(e) {
+            // Event delegation on chat container - most reliable approach
+            function handleSaveClick(e) {
+                const btn = e.target.closest('#btn-save-profile');
+                if (!btn) return;
+                
                 e.preventDefault();
-                console.log("Save button clicked via onclick");
-                submitProfileData();
-                return false;
-            };
-            
-            // Also add event listener as backup
-            submitBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log("Save button clicked via addEventListener");
-                submitProfileData();
-                return false;
-            });
-            
-            function submitProfileData() {
-                console.log("submitProfileData called");
-                const height = document.getElementById('height').value;
-                const weight = document.getElementById('weight').value;
-                const age = document.getElementById('age').value;
-                const diabetesType = document.getElementById('diabetes-type').value;
-                console.log("Form values:", { height, weight, age, diabetesType });
+                e.stopPropagation();
+                console.log("SAVE CLICKED via delegation");
+                
+                const height = document.getElementById('height');
+                const weight = document.getElementById('weight');
+                const age = document.getElementById('age');
+                const diabetesEl = document.getElementById('diabetes-type');
                 
                 if (!height || !weight || !age) {
+                    console.log("Form elements missing");
+                if (!height || !weight || !age) {
+                    console.log("Form elements missing");
+                    alert('Eroare: formular incomplet.');
+                    return;
+                }
+                
+                const hVal = height.value;
+                const wVal = weight.value;
+                const aVal = age.value;
+                const dVal = diabetesEl ? diabetesEl.value : 'Type 2';
+                
+                console.log("Form values:", hVal, wVal, aVal, dVal);
+                
+                if (!hVal || !wVal || !aVal) {
                     alert('Vă rugăm completați toate câmpurile.');
                     return;
                 }
                 
-                formElement.remove();
-                addMessageToChat(`Am înălțimea ${height} cm, greutatea ${weight} kg, vârsta ${age} ani, diabet ${diabetesType}.`, 'user');
+                // Remove listeners and form
+                chatMessages.removeEventListener('click', handleSaveClick);
+                const form = document.querySelector('.form-container');
+                if (form) form.remove();
+                
+                addMessageToChat(`Am înălțimea ${hVal} cm, greutatea ${wVal} kg, vârsta ${aVal} ani, diabet ${dVal}.`, 'user');
                 showTypingIndicator();
                 
                 try {
                     const userData = {
-                        height: parseFloat(height),
-                        weight: parseFloat(weight),
-                        age: parseInt(age),
-                        diabetesType: diabetesType,
+                        height: parseFloat(hVal),
+                        weight: parseFloat(wVal),
+                        age: parseInt(aVal),
+                        diabetesType: dVal,
                         lastUpdated: new Date().toISOString()
                     };
                     
@@ -667,12 +667,9 @@ www.hranamea.ro`;
                     localStorage.setItem('userProfile', JSON.stringify(userProfile));
                     console.log("Profile saved locally:", userProfile);
                     
-                    // Send to server — session cookie handles authentication, no userId needed
                     fetch('/api/ai/update-profile', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             dietPreferences: userProfile.dietPreferences || '',
                             healthGoals: userProfile.healthGoals || '',
@@ -682,77 +679,65 @@ www.hranamea.ro`;
                     })
                     .then(r => {
                         if (!r.ok) {
-                            if (r.status === 401) {
-                                throw new Error('NOT_LOGGED_IN');
-                            }
+                            if (r.status === 401) throw new Error('NOT_LOGGED_IN');
                             throw new Error('Server error: ' + r.status);
                         }
                         return r.json();
                     })
                     .then(data => {
                         console.log("Profile saved to server:", data);
-                        // Show confirmation to user
-                        const confirmMsg = document.createElement('div');
-                        confirmMsg.classList.add('message', 'ai-message');
-                        confirmMsg.style.cssText = 'background:#2d4a2d; border-left: 3px solid #4caf50; padding:10px; border-radius:8px;';
-                        confirmMsg.textContent = '✅ Datele tale au fost salvate în baza de date!';
-                        chatMessages.appendChild(confirmMsg);
+                        const msg = document.createElement('div');
+                        msg.classList.add('message', 'ai-message');
+                        msg.style.cssText = 'background:#2d4a2d; border-left:3px solid #4caf50; padding:10px; border-radius:8px;';
+                        msg.textContent = '✅ Datele tale au fost salvate în baza de date!';
+                        chatMessages.appendChild(msg);
                         scrollChatToBottom();
                     })
                     .catch(error => {
-                        console.error('Error updating profile on server:', error);
-                        const errMsg = document.createElement('div');
-                        errMsg.classList.add('message', 'ai-message');
+                        console.error('Error:', error);
+                        const msg = document.createElement('div');
+                        msg.classList.add('message', 'ai-message');
                         if (error.message === 'NOT_LOGGED_IN') {
-                            errMsg.style.cssText = 'background:#4a2d2d; border-left: 3px solid #f44336; padding:10px; border-radius:8px;';
-                            errMsg.innerHTML = '⚠️ Trebuie să fii <a href="login.html" style="color:#ff6b6b;">autentificat</a> pentru a salva datele în contul tău. Datele au fost salvate local în acest browser.';
+                            msg.style.cssText = 'background:#4a2d2d; border-left:3px solid #f44336; padding:10px; border-radius:8px;';
+                            msg.innerHTML = '⚠️ Trebuie să fii <a href="login.html" style="color:#ff6b6b;">autentificat</a> pentru a salva datele.';
                         } else {
-                            errMsg.style.cssText = 'background:#4a3520; border-left: 3px solid #ff9800; padding:10px; border-radius:8px;';
-                            errMsg.textContent = '⚠️ Nu s-a putut salva pe server (' + error.message + '). Datele au fost salvate local în acest browser.';
+                            msg.style.cssText = 'background:#4a3520; border-left:3px solid #ff9800; padding:10px; border-radius:8px;';
+                            msg.textContent = '⚠️ Server error: ' + error.message;
                         }
-                        chatMessages.appendChild(errMsg);
+                        chatMessages.appendChild(msg);
                         scrollChatToBottom();
                     });
                 } catch (e) {
-                    console.error("Error saving profile:", e);
+                    console.error("Error:", e);
                 }
                 
                 if (conversationId) {
-                    const bmi = (parseFloat(weight) / Math.pow(parseFloat(height)/100, 2)).toFixed(1);
-                    const dataMessage = `Datele mele: înălțime ${height}cm, greutate ${weight}kg, vârsta ${age} ani, diabet ${diabetesType}. IMC calculat: ${bmi}. Hai să analizăm împreună aceste date și să-ți fac un plan personalizat, poate un meniu săptămânal cu rețete românești sau un program de mișcare. Ce zici? 😊`;
+                    const bmi = (parseFloat(wVal) / Math.pow(parseFloat(hVal)/100, 2)).toFixed(1);
+                    const dataMessage = `Datele mele: înălțime ${hVal}cm, greutate ${wVal}kg, vârsta ${aVal} ani, diabet ${dVal}. IMC calculat: ${bmi}. Hai să analizăm împreună aceste date și să-ți fac un plan personalizat. Ce zici? 😊`;
                     messageQueue.push({ type: 'text', content: dataMessage, retries: 0 });
                     processMessageQueue();
                 } else {
                     setTimeout(() => {
                         hideTypingIndicator();
-                        const bmi = (parseFloat(weight) / Math.pow(parseFloat(height)/100, 2)).toFixed(1);
-                        let bmiCategory = "";
+                        const bmi = (parseFloat(wVal) / Math.pow(parseFloat(hVal)/100, 2)).toFixed(1);
+                        let bmiCat = "normal";
+                        if (bmi < 18.5) bmiCat = "subponderal";
+                        else if (bmi < 25) bmiCat = "normal";
+                        else if (bmi < 30) bmiCat = "supraponderal";
+                        else bmiCat = "obezitate";
                         
-                        if (bmi < 18.5) bmiCategory = "subponderal";
-                        else if (bmi < 25) bmiCategory = "normal";
-                        else if (bmi < 30) bmiCategory = "supraponderal";
-                        else bmiCategory = "obezitate";
+                        let resp = `Am calculat IMC-ul tău: ${bmi}, adică o greutate ${bmiCat}. 😊\n\n`;
+                        if (bmi >= 25) resp += "O mică scădere în greutate te-ar putea ajuta. Hai să vorbim despre ce mănânci!\n\n";
+                        else resp += "Greutatea ta e în regulă! Hai să ne focusăm pe menținere. 😋\n\n";
+                        resp += "1. Încearcă o ciorbă de legume\n2. O plimbare de 30 min\n3. Măsoară glicemia\n4. Ia medicamentele\n5. Mergi la control\n\nCe mai faci ca să ai grijă de tine?";
                         
-                        let response = `Am calculat IMC-ul tău: ${bmi}, adică o greutate ${bmiCategory}. 😊\n\n`;
-                        
-                        if (bmi >= 25) {
-                            response += "Se pare că o mică scădere în greutate te-ar putea ajuta să ții glicemia sub control. Știai că o pierdere de doar 5-10% din greutate poate face o diferență mare? Hai să vorbim despre ce mănânci de obicei – poate înlocuim niște pâine albă cu una integrală de la Vel Pitar?\n\n";
-                        } else {
-                            response += "Greutatea ta e în regulă, ceea ce e super pentru gestionarea diabetului! Hai să ne focusăm pe menținerea asta cu niște rețete gustoase, ca o salată de vinete cu hrișcă. 😋\n\n";
-                        }
-                        
-                        response += "Ce zici de câteva idei pentru un stil de viață sănătos?\n" +
-                            "1. Încearcă o ciorbă de legume – e plină de fibre și bună pentru glicemie\n" +
-                            "2. O plimbare de 30 de minute pe zi, poate prin parc\n" +
-                            "3. Măsoară glicemia așa cum ți-a zis medicul\n" +
-                            "4. Ia medicamentele la timp\n" +
-                            "5. Mergi la control regulat\n\n" +
-                            "Ce mai faci ca să ai grijă de tine? Îți place să gătești sau preferi ceva rapid?";
-                        
-                        addMessageToChat(response, 'ai');
+                        addMessageToChat(resp, 'ai');
                     }, 2000);
                 }
-            } // close submitProfileData function
+            }
+            
+            // Attach the event delegation listener
+            chatMessages.addEventListener('click', handleSaveClick);
         }, 500);
     }
     
