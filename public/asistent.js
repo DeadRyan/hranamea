@@ -627,8 +627,6 @@ www.hranamea.ro`;
                 
                 if (!height || !weight || !age) {
                     console.log("Form elements missing");
-                if (!height || !weight || !age) {
-                    console.log("Form elements missing");
                     alert('Eroare: formular incomplet.');
                     return;
                 }
