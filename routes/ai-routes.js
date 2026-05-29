@@ -295,19 +295,36 @@ router.post('/analyze-image', upload.single('image'), (req, res) => {
     }
 });
 
-// Update or create user profile with AI preferences
+// Update or create user profile with AI preferences and personal data
 router.post('/update-profile', (req, res) => {
     try {
-        const { userId, dietPreferences, healthGoals, allergies } = req.body;
-        
-        if (!userId) {
-            return res.status(400).json({ error: 'User ID is required' });
+        // Use the real authenticated user ID from session, not client-generated ID
+        const realUserId = (req.session && req.session.user) ? req.session.user.id : null;
+        if (!realUserId) {
+            return res.status(401).json({ error: 'Trebuie să fiți autentificat pentru a salva datele personale' });
         }
+        
+        const { dietPreferences, healthGoals, allergies, userData } = req.body;
+        
+        // Parse the userData JSON (height, weight, age, diabetesType)
+        let parsedUserData = {};
+        if (userData) {
+            try {
+                parsedUserData = typeof userData === 'string' ? JSON.parse(userData) : userData;
+            } catch (e) {
+                console.error('Error parsing userData:', e);
+            }
+        }
+        
+        const height = parsedUserData.height || null;
+        const weight = parsedUserData.weight || null;
+        const age = parsedUserData.age || null;
+        const diabetesType = parsedUserData.diabetesType || null;
         
         // Check if profile exists
         db.query(
             'SELECT * FROM user_ai_profiles WHERE user_id = ?',
-            [userId],
+            [realUserId],
             (err, results) => {
                 if (err) {
                     console.error('Database error checking user profile:', err);
@@ -317,14 +334,20 @@ router.post('/update-profile', (req, res) => {
                 const profileData = {
                     diet_preferences: dietPreferences || '',
                     health_goals: healthGoals || '',
-                    allergies: allergies || ''
+                    allergies: allergies || '',
+                    height: height,
+                    weight: weight,
+                    age: age,
+                    diabetes_type: diabetesType
                 };
                 
                 if (results && results.length > 0) {
-                    // Update existing profile
+                    // Update existing profile — include all personal data fields
                     db.query(
-                        'UPDATE user_ai_profiles SET diet_preferences = ?, health_goals = ?, allergies = ?, updated_at = NOW() WHERE user_id = ?',
-                        [profileData.diet_preferences, profileData.health_goals, profileData.allergies, userId],
+                        'UPDATE user_ai_profiles SET diet_preferences = ?, health_goals = ?, allergies = ?, height = ?, weight = ?, age = ?, diabetes_type = ?, updated_at = NOW() WHERE user_id = ?',
+                        [profileData.diet_preferences, profileData.health_goals, profileData.allergies, 
+                         profileData.height, profileData.weight, profileData.age, profileData.diabetes_type,
+                         realUserId],
                         (err) => {
                             if (err) {
                                 console.error('Error updating user profile:', err);
@@ -335,10 +358,11 @@ router.post('/update-profile', (req, res) => {
                         }
                     );
                 } else {
-                    // Create new profile
+                    // Create new profile — include all personal data fields
                     db.query(
-                        'INSERT INTO user_ai_profiles (user_id, diet_preferences, health_goals, allergies, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
-                        [userId, profileData.diet_preferences, profileData.health_goals, profileData.allergies],
+                        'INSERT INTO user_ai_profiles (user_id, diet_preferences, health_goals, allergies, height, weight, age, diabetes_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+                        [realUserId, profileData.diet_preferences, profileData.health_goals, profileData.allergies,
+                         profileData.height, profileData.weight, profileData.age, profileData.diabetes_type],
                         (err) => {
                             if (err) {
                                 console.error('Error creating user profile:', err);
@@ -349,6 +373,47 @@ router.post('/update-profile', (req, res) => {
                         }
                     );
                 }
+            }
+        );
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'An error occurred', details: error.message });
+    }
+});
+
+// GET user profile — retrieve saved personal data
+router.get('/profile', (req, res) => {
+    try {
+        const realUserId = (req.session && req.session.user) ? req.session.user.id : null;
+        if (!realUserId) {
+            return res.status(401).json({ error: 'Trebuie să fiți autentificat' });
+        }
+        
+        db.query(
+            'SELECT * FROM user_ai_profiles WHERE user_id = ?',
+            [realUserId],
+            (err, results) => {
+                if (err) {
+                    console.error('Database error fetching profile:', err);
+                    return res.status(500).json({ error: 'Database error', details: err.message });
+                }
+                
+                if (!results || results.length === 0) {
+                    return res.json({ profile: null });
+                }
+                
+                const row = results[0];
+                res.json({
+                    profile: {
+                        height: row.height,
+                        weight: row.weight,
+                        age: row.age,
+                        diabetesType: row.diabetes_type,
+                        dietPreferences: row.diet_preferences,
+                        healthGoals: row.health_goals,
+                        allergies: row.allergies
+                    }
+                });
             }
         );
     } catch (error) {

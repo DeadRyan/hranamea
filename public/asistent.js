@@ -126,6 +126,39 @@ Exemplu de răspuns:
     
     // Initialize conversation
     function initializeConversation() {
+        // First, try to load profile from server (if user is authenticated)
+        fetch('/api/ai/profile')
+            .then(response => {
+                if (!response.ok) return null; // not authenticated, skip
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.profile) {
+                    // Merge server profile into localStorage
+                    const localProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    const serverProfile = {
+                        height: data.profile.height,
+                        weight: data.profile.weight,
+                        age: data.profile.age,
+                        diabetesType: data.profile.diabetesType,
+                        dietPreferences: data.profile.dietPreferences,
+                        healthGoals: data.profile.healthGoals,
+                        allergies: data.profile.allergies
+                    };
+                    // Server data takes precedence, but keep any local-only fields
+                    const merged = { ...localProfile, ...serverProfile };
+                    localStorage.setItem('userProfile', JSON.stringify(merged));
+                    console.log("Profile loaded from server and merged:", merged);
+                }
+            })
+            .catch(err => console.log('Could not load server profile (may not be logged in):', err.message))
+            .finally(() => {
+                // Always proceed with conversation init after profile attempt
+                startConversation();
+            });
+    }
+    
+    function startConversation() {
         const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
         console.log("Loaded user profile:", userProfile);
         
@@ -608,22 +641,22 @@ www.hranamea.ro`;
                     localStorage.setItem('userProfile', JSON.stringify(userProfile));
                     console.log("Profile saved locally:", userProfile);
                     
-                    if (conversationId) {
-                        fetch('/api/ai/update-profile', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userId: userId,
-                                dietPreferences: userProfile.dietPreferences || '',
-                                healthGoals: userProfile.healthGoals || '',
-                                allergies: userProfile.allergies || '',
-                                userData: JSON.stringify(userData)
-                            })
+                    // Send to server — session cookie handles authentication, no userId needed
+                    fetch('/api/ai/update-profile', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            dietPreferences: userProfile.dietPreferences || '',
+                            healthGoals: userProfile.healthGoals || '',
+                            allergies: userProfile.allergies || '',
+                            userData: JSON.stringify(userData)
                         })
-                        .catch(error => console.error('Error updating profile:', error));
-                    }
+                    })
+                    .then(r => r.json())
+                    .then(data => console.log("Profile saved to server:", data))
+                    .catch(error => console.error('Error updating profile on server:', error));
                 } catch (e) {
                     console.error("Error saving profile:", e);
                 }

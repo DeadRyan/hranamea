@@ -83,6 +83,9 @@ try {
     
     // Apply authentication middleware only to image analysis route
     app.use('/api/ai/analyze-image', authMiddleware.hasFullAccess);
+    // Also protect profile update and profile fetch routes
+    app.use('/api/ai/update-profile', authMiddleware.isLoggedIn);
+    app.use('/api/ai/profile', authMiddleware.isLoggedIn);
     
     // All other AI routes are available to everyone
     app.use('/api/ai', aiRoutes);
@@ -144,7 +147,21 @@ try {
     // Fallback profile update endpoint
     router.post('/update-profile', (req, res) => {
         console.log('Fallback profile update endpoint called');
+        const realUserId = (req.session && req.session.user) ? req.session.user.id : null;
+        if (!realUserId) {
+            return res.status(401).json({ error: 'Trebuie să fiți autentificat' });
+        }
         res.json({ success: true });
+    });
+
+    // Fallback profile GET endpoint
+    router.get('/profile', (req, res) => {
+        console.log('Fallback profile GET endpoint called');
+        const realUserId = (req.session && req.session.user) ? req.session.user.id : null;
+        if (!realUserId) {
+            return res.status(401).json({ error: 'Trebuie să fiți autentificat' });
+        }
+        res.json({ profile: null });
     });
     
     app.use('/api/ai', router);
