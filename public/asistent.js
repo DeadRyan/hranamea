@@ -982,16 +982,17 @@ www.hranamea.ro`;
     improveScrolling();
     
     function scrollChatToBottom() {
-        if (chatMessagesEl) {
-            // Force reflow then scroll
-            chatMessagesEl.style.display = 'none';
-            chatMessagesEl.offsetHeight;
-            chatMessagesEl.style.display = '';
-            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-            setTimeout(() => {
+        if (!chatMessagesEl) return;
+        // Use requestAnimationFrame to wait for DOM paint, then scroll
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
                 chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-            }, 300);
-        }
+                // One more after a delay for any late-rendering content
+                setTimeout(() => {
+                    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+                }, 500);
+            });
+        });
     }
     
     function updateViewportHeight() {
