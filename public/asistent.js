@@ -752,7 +752,7 @@ www.hranamea.ro`;
                         addMessageToChat(response, 'ai');
                     }, 2000);
                 }
-            });
+            } // close submitProfileData function
         }, 500);
     }
     
