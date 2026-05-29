@@ -611,12 +611,38 @@ www.hranamea.ro`;
             chatMessages.appendChild(formElement);
             scrollChatToBottom();
             
-            addMultipleListeners(document.getElementById('submit-data'), ['click', 'touchend'], function(e) {
+            // Use direct onclick + addEventListener for maximum compatibility
+            const submitBtn = document.getElementById('submit-data');
+            console.log("Submit button found:", !!submitBtn);
+            
+            if (!submitBtn) {
+                console.error("CRITICAL: submit-data button not found in DOM!");
+                return;
+            }
+            
+            // Direct onclick as primary (most reliable)
+            submitBtn.onclick = function(e) {
                 e.preventDefault();
+                console.log("Save button clicked via onclick");
+                submitProfileData();
+                return false;
+            };
+            
+            // Also add event listener as backup
+            submitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log("Save button clicked via addEventListener");
+                submitProfileData();
+                return false;
+            });
+            
+            function submitProfileData() {
+                console.log("submitProfileData called");
                 const height = document.getElementById('height').value;
                 const weight = document.getElementById('weight').value;
                 const age = document.getElementById('age').value;
                 const diabetesType = document.getElementById('diabetes-type').value;
+                console.log("Form values:", { height, weight, age, diabetesType });
                 
                 if (!height || !weight || !age) {
                     alert('Vă rugăm completați toate câmpurile.');
